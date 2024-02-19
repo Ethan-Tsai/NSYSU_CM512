@@ -1,0 +1,1001 @@
+---
+title: UNIT01A：Notes for DataCamp:Introduction to R
+author: Tony Chuo, NSYSU
+date: "`r Sys.time()`"
+output: 
+  html_document: 
+    css: ../etc/style.css
+    highlight: pygments
+    theme: spacelab
+    toc: true
+    toc_float: 
+        collapsed: true
+        smooth_scroll: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r echo=F, results='hide', message=FALSE, warning=FALSE}
+# Installation, setup & formatting. Do not modify this code chunk.  
+rm(list=ls(all=T))
+knitr::opts_chunk$set(comment = NA)
+knitr::opts_chunk$set(paged.print=FALSE)
+knitr::opts_knit$set(global.par = TRUE)
+par(cex=0.8); options(scipen=20, digits=4, width=90)
+if(!require(pacman)) install.packages("pacman")
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(ggplot2)) install.packages("ggplot2")
+options(scipen=20, digits=4, width=80, tibble.print_min=4)
+rmarkdown::find_pandoc(version = '2.7.3')
+```
+
+
+<br><hr>
+
+### 1. Intro to Basics 
+Take your first steps with R. In this chapter, you will learn how to use the console as a calculator and how to assign variables. You will also get to know the basic data types in R. Let's get started.
+
+##### How it works
+In the editor on the right there is already some sample code. Can you see which lines are actual R code and which are comments?
+```{r}
+# Calculate 3 + 4
+3+4
+```
+
+```{r}
+# Calculate 6 + 12
+6+12
+```
+
+🌻 輸入<z>運算式(expression)</z>，R會輸出運算的結果
+
+##### Arithmetic with R
+```{r}
+# An addition
+5 + 5 
+
+# A subtraction
+5 - 5 
+
+# A multiplication
+3 * 5
+
+ # A division
+(5 + 5) / 2 
+```
+
+除了四則運算和括號，R還有一些常用的運算符號<br> 
+```{r}
+# Exponentiation: Type 2^5 in the editor to calculate 2 to the power 5.
+2^5
+
+# Modulo: Type 28 %% 6 to calculate 28 modulo 6.
+28%%6
+```
+
+🌻 [Quick-R](https://www.statmethods.net/management/operators.html)有很多對初學者有用的資訊 
+
+##### Variable assignment
+我們可以用 `<-` 或 `=`,把運算的結果儲存到一個「<z>資料物件(data object, variable)</z>」裡面
+```{r}
+# Assign the value 42 to x
+x <- 42
+```
+
+```{r}
+# Print out the value of the variable x
+x
+```
+
+##### Variable assignment (2)
+```{r}
+# Assign the value 5 to the variable my_apples
+my_apples=5
+```
+
+```{r}
+# Print out the value of the variable my_apples
+my_apples
+```
+
+##### Variable assignment (3)
+```{r}
+# Assign a value to the variables my_apples and my_oranges
+my_apples <- 5
+
+# Assign to my_oranges the value 6.
+my_oranges <- 6
+
+# Add these two variables together
+my_apples + my_oranges
+
+# Create the variable my_fruit
+my_fruit = my_apples + my_oranges
+```
+
+我們可以在運算式裡面使用資料物件，把運算的結果<z>儲存</z>到另外一個資料物件裡面
+
+##### Apples and oranges
+Arithmetic operators allow objects of numeric datatypes but not `character`.
+```{r}
+# Assign a value to the variable my_apples
+my_apples <- 5 
+
+# Fix the assignment of my_oranges, so that it can be added with `my_apples`
+# my_oranges <- "six"
+my_oranges <- 6
+
+# Create the variable my_fruit and print it out
+my_fruit <- my_apples + my_oranges 
+my_fruit
+```
+
+##### Basic datatypes in R
+```{r}
+# Change my_numeric to be 42
+my_numeric <- 42
+
+# Change my_character to be "universe"
+my_character <- "universe"
+
+# Change my_logical to be FALSE
+my_logical <- FALSE
+```
+
+🌻 常用的R<z>資料種類(types)</z>：
+
++ 整數(integer)、實數(numeric)
++ 文字、字串(character)
++ 類別(factor) 
++ 邏輯(logical/boolean)
++ 日期(`Date`)、時間(`POXIXct`,...)
+
+<br>
+
+##### What's that data type?
+```{r}
+# Declare variables of different types
+my_numeric <- 42
+my_character <- "universe"
+my_logical <- FALSE 
+
+# Check class of my_numeric
+class(my_numeric)
+
+# Check class of my_character
+class(my_character)
+
+# Check class of my_logical
+class(my_logical)
+
+```
+
+<br><hr>
+
+### 2. Vectors 向量
+<z>向量(vector)</z>是哪裡面最基本的資料結構，一個向量物件就是一個系列同一種資料種類(data type)的值。
+
+We take you on a trip to Vegas, where you will learn how to analyze your gambling results using vectors in R. After completing this chapter, you will be able to create vectors in R, name them, select elements from them, and compare different vectors.
+
+##### Create a vector
+```{r}
+# Assign the value "Go!" to the variable `vegas`. Remember: R is case sensitive!
+vegas <- "Go!"
+```
+
+##### Create a vector (2)
+In R, you create a vector with the combine function c(). You place the vector elements separated by a comma between the parentheses. For example: <br>
+In R, you create a vector with the combine function c(). You place the vector elements separated by a comma between the parentheses. For example:
+```{r}
+numeric_vector <- c(1, 10, 49)
+character_vector <- c("a", "b", "c")
+```
+
+🌻 Use the `c()` function to create vector. <br>   
+🌻 All elements in c() must be the same datatype.
+
+我們可以用`c()`這一個<z>功能(function)</z>,將<z>同一種類</z>的資料結合成一個<z>向量</z><br>
+然後用`<-`或`=`為這個<z>向量物件</z>取一個名稱
+```{r}
+vector1 <- c(1.2, 3.5, 15.2)            # `vector1`是一個數值向量
+vector2 = c("Alice", "Bob", "Cindy")    # `vector2`是一個文字向量
+```
+
+```{r}
+# Complete the code for `boolean_vector` contains the three elements: `TRUE`, `FALSE` and `TRUE` (in that order).
+boolean_vector <- c(TRUE, FALSE, TRUE)
+```
+
+##### Create a vector (3)
+```{r}
+# Poker winnings from Monday to Friday
+# 從星期一到星期五玩撲克贏或輸的錢
+poker_vector <- c(140, -50, 20, -120, 240)
+```
+
+```{r}
+# Roulette winnings: Monday lost $24, Tuesday lost $50, 
+# Wednesday won $100, Thursday lost $350, and Friday won $10.
+# 從星期一到星期五玩輪盤贏或輸的錢
+roulette_vector <- c(-24,-50,100,-350,10)
+```
+
+##### Naming vector elements 向量元件的名稱 
+不只是物件可以有<z>名稱(name</z>)，物件中的每一個元件(子物件)也可以有一個名稱<br>
+```{r}
+poker_vector
+```
+
+`names()`可以用來指定物件(`poker_vector`)中的每一個子物件的名字
+```{r}
+# Assign days as names of poker_vector
+names(poker_vector) <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+poker_vector
+```
+
+🌻 如上所示，名稱可以讓物件(和子物件)都變得更容易解讀。
+
+```{r}
+# Assign days as names of roulette_vector
+names(roulette_vector) = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+roulette_vector
+```
+
+##### Naming a vector (2)
+```{r}
+# Poker winnings from Monday to Friday
+poker_vector <- c(140, -50, 20, -120, 240)
+
+# Roulette winnings from Monday to Friday
+roulette_vector <- c(-24, -50, 100, -350, 10)
+
+# The variable days_vector
+# 如果我們與先把週一到週五的文字預先存放在`days_vector`裡面
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+```
+
+```{r}
+# Assign the names of the day to roulette_vector and poker_vector
+# 程式寫起來就會比較簡捷
+names(poker_vector) <- days_vector  
+names(roulette_vector) <- days_vector
+```
+
+##### Calculating total winnings 向量的數學運算
+```{r}
+A_vector <- c(1, 2, 3)
+B_vector <- c(4, 5, 6)
+
+# Take the sum of A_vector and B_vector
+total_vector <- A_vector + B_vector
+  
+# Print out total_vector
+total_vector
+```
+
+##### Calculating total winnings (2)
+```{r}
+# Assign to total_daily how much you won/lost on each day
+total_daily <- poker_vector + roulette_vector
+total_daily
+```
+
+##### Calculating total winnings (3)
+R用`function_name()`來表示<z>功能呼叫</z>，如`sum(vector1)`會回傳`vector1`之中所有數值的總和，常用的R內建功能請參考：[Built-in Functions](https://www.statmethods.net/management/functions.html)
+```{r}
+# Total winnings with poker 玩撲克總共贏了多少錢呢?
+total_poker <- sum(poker_vector)
+
+# Total winnings with roulette 玩輪盤總共贏了多少錢呢?  
+total_roulette <-  sum(roulette_vector)
+
+# Total winnings overall 這一周的總輸贏是?  
+total_week <- total_poker + total_roulette
+
+# Print out total_week
+total_week
+```
+
+##### Comparing total winnings
+```{r}
+# Calculate total gains for poker and roulette
+total_poker <- sum(poker_vector)
+total_roulette <-  sum(roulette_vector)
+
+# Check if you realized higher total gains in poker than in roulette
+total_poker > total_roulette
+```
+
+🌻 <z>Comparison Operators</z> 比較運算符號
+
++ `<` for less than
++ `>` for greater than
++ `<=` for less than or equal to
++ `>=` for greater than or equal to
++ `==` for equal to each other 
++ `!=` not equal to each other
+
+🌻 比較運算式(Comparison Expression)運算的結果會是邏輯值：`TRUE`或`FALSE`
+
+<br>
+
+🌷 <z>索引(index)</z>可以取出物件之中的某些子物件，R用`[]`來作索引 
+
+
+🌷 R的索引方式非常靈活，一共有三種索引方式：
+
++ <z>位置索引</z>：[整數向量]如：[c(3,5,10)], [2]  
++ <z>名稱索引</z>：[文字向量]如：[c("Monday","Friday")]
++ <z>條件索引</z>：[邏輯向量]如：[poker_vector > 0]
+
+<br>
+
+##### Vector selection: the good times 位置(整數)索引
+```{r}
+# Assign the poker results of Wednesday to the variable poker_wednesday. Using index notation `[]`
+poker_wednesday <- poker_vector[3]
+```
+
+##### Vector selection: the good times (2) 位置(整數)索引
+```{r}
+# Assign the poker results of Tuesday, Wednesday and Thursday to the variable poker_midweek, using `[c(2,3,4)]`
+poker_midweek <- poker_vector[c(2,3,4)]
+```
+
+##### Vector selection: the good times (3) 位置(整數)索引
+<z>連續的整數向量</z>可以寫成`a:b`這種形式，例如`2:6`代表`c(2,3,4,5,6)`
+```{r}
+# Poker and roulette winnings from Monday to Friday:
+# Assign to roulette_selection_vector the roulette results from Tuesday up to Friday; make use of `[2:5]`
+roulette_selection_vector <- roulette_vector[2:5]
+```
+
+##### Vector selection: the good times (4) 名稱(文字)索引
+```{r}
+# Poker and roulette winnings from Monday to Friday:
+# Select poker results by names `[c("Monday", "Tuesday", "Wednesday")]`
+poker_start <- poker_vector[c("Monday", "Tuesday", "Wednesday")]
+poker_start
+```
+
+`mean()`計算數值向量之中所有數值的平均值
+```{r}
+# Calculate the average of the elements in poker_start by `mean()`
+mean(poker_start)
+```
+
+##### Selection by comparison - Step 1 
+🌷 <z>條件索引</z>是最常用的索引
+```{r}
+# Poker and roulette winnings from Monday to Friday:
+poker_vector <- c(140, -50, 20, -120, 240)
+roulette_vector <- c(-24, -50, 100, -350, 10)
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+names(poker_vector) <- days_vector
+names(roulette_vector) <- days_vector
+
+# Which days did you make money on poker?
+selection_vector <- poker_vector > 0
+  
+# Print out selection_vector
+selection_vector  
+```
+🌻 Comparison Operators
+
++ `<` for less than
++ `>` for greater than
++ `<=` for less than or equal to
++ `>=` for greater than or equal to
++ `==` for equal to each other 
++ `!=` not equal to each other
+
+##### Selection by comparison - Step 2
+```{r}
+# Select from poker_vector these days using the indexing vector `[selection_vector]`
+poker_winning_days <- poker_vector[selection_vector]
+poker_winning_days 
+```
+
+##### Advanced selection
+```{r}
+# Poker and roulette winnings from Monday to Friday:
+poker_vector <- c(140, -50, 20, -120, 240)
+roulette_vector <- c(-24, -50, 100, -350, 10)
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+names(poker_vector) <- days_vector
+names(roulette_vector) <- days_vector
+
+# Which days did you make money on roulette?
+selection_vector <- roulette_vector > 0
+
+# Select from roulette_vector these days
+roulette_winning_days <- roulette_vector[selection_vector]
+roulette_winning_days
+```
+
+<br><hr>
+
+### 3. Matrices 矩陣
+<z>矩陣(maatrix)</z>與向量一樣，一個矩陣物件裡面所有的子物件都必須要有同樣的資料類別(data type)，不過矩陣是一種二維的資料結構，向量的子元件是一維的排列，而矩陣的子元件是二維的排列。在這個章節裡面， 我們先練習在R語言裡面如何定義和使用矩陣。 
+
+A matrix is two dimensional data object of a collection of elements of the same data type (numeric, character, or logical) arranged into a fixed number of rows and columns. 
+
+You can construct a matrix in R with the matrix() function. Consider the following example: `matrix(1:9, byrow = TRUE, nrow = 3)`
+
+##### What's a matrix?
+`matrix()`可以將一維的向量傳變成二維的<z>矩陣</z>
+```{r}
+# Construct a matrix with 3 rows containing the numbers 1 up to 9, filled row-wise.
+matrix(1:9, byrow=T, nrow=3)
+```
+
+##### Analyze matrices, you shall 
+製作星際大戰前三部電影的票房矩陣
+```{r}
+# Box office Star Wars (in millions!)
+new_hope <- c(460.998, 314.4)
+empire_strikes <- c(290.475, 247.900)
+return_jedi <- c(309.306, 165.8)
+
+# Create box_office
+# Concatenate the 3 vectors `c(new_hope, empire_strikes, return_jedi)` 
+# Then create a matrix by `matrix()`. Remember to specify `byrow` and `nrow`
+box_office <- c(new_hope,empire_strikes,return_jedi)
+box_office
+```
+
+```{r}
+# Construct star_wars_matrix
+star_wars_matrix <- matrix(box_office, byrow=T, nrow=3)
+  
+# print out the matrix
+star_wars_matrix
+```
+
+##### Naming a matrix
+矩陣每一行(column)和每一列(row)都可以有名稱
+```{r}
+# Box office Star Wars (in millions!)
+new_hope <- c(460.998, 314.4)
+empire_strikes <- c(290.475, 247.900)
+return_jedi <- c(309.306, 165.8)
+
+# Construct matrix
+star_wars_matrix <- matrix(c(new_hope, empire_strikes, return_jedi), nrow = 3, byrow = TRUE)
+
+# Vectors region and titles, used for naming
+region <- c("US", "non-US")
+titles <- c("A New Hope", "The Empire Strikes Back", "Return of the Jedi")
+```
+
+
+```{r}
+# Name the columns with region with `colnames()`
+colnames(star_wars_matrix) = region
+
+# Name the rows with titles  with `rownames()`
+rownames(star_wars_matrix) = titles
+
+# Print out star_wars_matrix
+star_wars_matrix
+```
+
+##### Calculating the worldwide box office
+使用`rowSums()`這個功能來計算星際大戰前三部電影的全球票房
+```{r}
+# Calculate worldwide box office figures for each movies with `rowSums()`
+worldwide_vector <- rowSums(star_wars_matrix) 
+
+worldwide_vector
+```
+
+##### Adding a column for the Worldwide box office
+`cbind()`在column的方向合併矩陣，用這個功能將全球票房向量`worldwide_vector`併入`all_wars_matrix`票房矩陣
+```{r}
+# Construct worldwide box office vector
+# Bind the new variable worldwide_vector as a column to star_wars_matrix with `cbind()`
+all_wars_matrix <-cbind(star_wars_matrix,worldwide_vector)  
+
+all_wars_matrix
+```
+
+##### Adding rows
+`rbind()`在row的方向合併矩陣，我們先製作星戰系列後三部電影的票房矩陣(`star_wars_matrix2`)
+```{r}
+star_wars_matrix2 = matrix(
+  c(474.5,  552.5, 310.7,  338.7, 380.3,  468.5),
+  byrow=T, nrow=3)
+rownames(star_wars_matrix2) = c(
+  "The Phantom Menace","Attack of the Clones",
+  "Revenge of the Sith") 
+colnames(star_wars_matrix2)=c("US", "non-US")
+
+star_wars_matrix2
+```
+
+然後用`rbind()`將它併入`all_wars_matrix`
+```{r}
+# Combine both Star Wars trilogies in one matrix with `rbind()`
+all_wars_matrix <- rbind(star_wars_matrix, star_wars_matrix2) 
+  
+all_wars_matrix  
+```
+
+##### The total box office revenue for the entire saga
+用`colSums`計算星戰系列的`US`和`non-US`的票房總合
+```{r}
+# Total revenue for US and non-US with `colSums()`
+total_revenue_vector <- colSums(all_wars_matrix)
+  
+# Print out total_revenue_vector
+total_revenue_vector  
+```
+
+##### Selection of matrix elements <z>矩陣的索引</z>
+二維物件的索引需要以`[row_index,column_index]`的形式指定想要抽取的rows和columns
+```{r}
+# Select the non-US revenue for all movies with index notation `[,2]`
+non_us_all <- all_wars_matrix[,2]
+  
+# Average non-US revenue with `mean()` 
+mean(non_us_all)
+```
+星戰系列電影海外票房的平均值
+
+```{r}
+# Select the non-US revenue for first two movies with index notation `[1:2,2]`
+non_us_some <- all_wars_matrix[1:2,2]
+  
+# Average non-US revenue for first two movies with `mean()`
+mean(non_us_some)
+```
+星戰系列前兩部電影海外票房的平均值
+
+##### A little arithmetic with matrices
+假設所有電影在所有地區的票價都是`$5`，我們可以從票房矩陣推算出每一部電影的觀眾人數
+```{r}
+# Estimate the visitors, assuming ticket price is $5
+visitors <- all_wars_matrix/5
+  
+# Print the estimate to the console
+visitors
+```
+
+##### A little arithmetic with matrices (2)
+假設每部電影在各地區的票價不相同，我們就要先製作一個票價矩陣(`ticket_prices_matrix`)
+```{r}
+ticket_prices_matrix = matrix(
+  c(5,5,6,6,7,7,4,4,4.5,4.5,4.9,4.9), byrow=T, nrow=6,
+  dimnames=list(
+    rownames(all_wars_matrix),
+    colnames(all_wars_matrix))
+  ); ticket_prices_matrix
+```
+
+再推算出每一部電影在不同地區的觀眾人數
+```{r}
+# Estimated number of visitors 
+visitors <- all_wars_matrix / ticket_prices_matrix
+visitors
+```
+
+星戰系列各部電影美國觀眾人數的平均值是多少人呢？
+```{r}
+# US visitors 
+us_visitors <- visitors[,1] 
+
+# Average number of US visitors
+mean(us_visitors)
+```
+
+
+<br><hr>
+
+### 4. Factors 類別(因素)
+某一些資料，像是顧客的性別("男性","女性")，交通工具("汽車","火車","飛機")等，雖然說這些資料都是文字的方式呈現，但它們它們的內容只限定於某一些固定的類別，而不是任意的文字字串，在程式語言裡面，這一種資料為別會被稱為"類別(Factor)"資料。在這裡我們先介紹一下載R語言裡面如何定義、使用<z>類別資料物件(Factor)</z>，在後續的單元裡面，我在做分類統計、分類比較或者交叉分析時，類別資料將會是主要的分類基礎。
+
+Data often falls into a limited number of categories. For example, human hair color can be categorized as black, brown, blond, red, grey, or white—and perhaps a few more options for people who color their hair. In R, categorical data is stored in factors. Factors are very important in data analysis, so start learning how to create, subset, and compare them now.
+
+##### What's a factor and why would you use it?
+```{r}
+# Assign to variable theory the value "factors"
+theory = "factors"
+```
+
+##### What's a factor and why would you use it? (2)
+```{r}
+# create `sex vector`
+sex_vector <- c("Male", "Female", "Female", "Male", "Male")
+sex_vector
+```
+`sex_vector`是一個文字向量
+
+<z>`factor()`這一個功能可以把文字或者數值物件轉換成類別物件
+```{r}
+# Convert `sex_vector` to a factor
+factor_sex_vector <- factor(sex_vector)
+
+# Print out factor_sex_vector
+factor_sex_vector
+```
+轉換之後，`factor_sex_vector`就是一個類別向量。<br>
+
+🌻 列印類別物件時，在向量值的下方會註明這個類別物件裡面有哪一些類別(`Levels:`)
+
+<br>
+
+##### What's a factor and why would you use it? (3)
+
+一般的類別物件裡面，各類別之間並沒有大小的區別，雖然說列印的時候，R會依字母的順序列出各個類別，但是這列印順序並沒有大小的意涵。
+
+```{r}
+# Animals
+animals_vector <- c("Elephant", "Giraffe", "Donkey", "Horse")
+factor_animals_vector <- factor(animals_vector)
+factor_animals_vector
+```
+
+如果我們想要讓類別之間有大小，在呼叫`factor()`時就需要加進去`order=TRUE`這一個參數選項。
+```{r}
+# Temperature
+temperature_vector <- c("High", "Low", "High","Low", "Medium")
+factor_temperature_vector <- factor(
+  temperature_vector, order = TRUE, 
+  levels = c("Low", "Medium", "High"))
+factor_temperature_vector
+```
+
+🌻 `Levels: Low < Medium < High`代表：`High`比`Medium`大，`Medium`比`Low`大
+
+<br>
+
+##### Factor levels
+```{r}
+# Code to build factor_survey_vector
+survey_vector <- c("M", "F", "F", "M", "M")
+factor_survey_vector <- factor(survey_vector)
+factor_survey_vector
+```
+
+`levels()`可以用來改變類別(`level`)的名稱
+```{r}
+# Specify the levels of factor_survey_vector
+levels(factor_survey_vector) <- c("Female","Male")
+factor_survey_vector
+```
+
+##### Summarizing a factor
+Take a `summary()` of the `survey_vector` and `factor_survey_vector`. Interpret the results of both vectors. Are they both equally useful in this case?
+
+對類別向量`factor_survey_vector`而言，`summary()`可以統計各分類的次數，但它對文字向量(`survey_vector`)是沒有用的
+```{r}
+# Generate summary for survey_vector
+summary(survey_vector)
+```
+
+```{r}
+# Generate summary for factor_survey_vector
+summary(factor_survey_vector)
+```
+
+##### Battle of the sexes
+```{r}
+# Build factor_survey_vector with clean levels
+survey_vector <- c("M", "F", "F", "M", "M")
+factor_survey_vector <- factor(survey_vector)
+levels(factor_survey_vector) <- c("Female", "Male")
+
+# Male
+male <- factor_survey_vector[1]
+
+# Female
+female <- factor_survey_vector[2]
+
+# Battle of the sexes: Male 'larger' than female?
+male > female
+```
+
+🌷 因為在產生`factor_survey_vector`時我們並沒有指定`order=TRUE`，所以它的各子元件之間是不能比大小的！
+
+##### Ordered factors
+Defind `speed_vector` as a **Character** vector with 5 entries, one for each analyst. Each entry should be either "slow", "medium", or "fast". Use the list below:
+
++ Analyst 1 is medium,
++ Analyst 2 is slow,
++ Analyst 3 is slow,
++ Analyst 4 is medium and
++ Analyst 5 is fast.
+
+我們用`speed_vector`來記錄五位分析師的工作速度
+```{r}
+# Create speed_vector
+speed_vector <- c("medium", "slow", "slow", "medium", "fast")
+```
+
+##### Ordered factors (2)
+然後用`factor(...,order=TRUE)將其轉變為一個有序的類別向量(ordinal factor vector)
+```{r}
+# Convert speed_vector to ordered factor vector
+factor_speed_vector <- factor(
+  speed_vector,levels=c("slow","medium","fast"),ordered=TRUE)
+
+# Print factor_speed_vector
+factor_speed_vector
+```
+
+##### Comparing ordered factors
+```{r}
+# Factor value for second data analyst
+da2 <- factor_speed_vector[2]
+# Factor value for fifth data analyst
+da5 <- factor_speed_vector[5]
+
+# Is data analyst 2 faster than data analyst 5?
+da2 > da5
+```
+然後我們就可以用比較運算符號(`>`)在它的子元素之間做大小比較了！
+
+
+<br><hr>
+
+### 5. Data Frame 資料框
+跟矩陣一樣<z>資料框(data frame)</z>也是一種二維的資料結構，不過矩陣物件裡全部的子元件必須要有同樣的資料類別(data type)，而資料框沒有這一個限制，它的行columns可以有不一樣的資料種類，在後續的單元裡面我們會看到資料框是商業數據分析裡面最常見、最重要的一種資料結構，在這個章節我們先介紹一下載R語言裡面如何定義、使用資料框。
+
+Data often falls into a limited number of categories. For example, human hair color can be categorized as black, brown, blond, red, grey, or white—and perhaps a few more options for people who color their hair. In R, categorical data is stored in factors. Factors are very important in data analysis, so start learning how to create, subset, and compare them now.
+
+##### What's a data frame?
+R裡面有一個內建的資料框`mtcars`，如下所示，它記錄了一些汽車型號的各種屬性
+```{r,paged.print=FALSE}
+data(mtcars)
+mtcars
+```
+各屬性的定義
+```{r}
+# ?mtcars
+```
+
+
+##### Quick, have a look at your dataset
+看看這個資料框的前面幾筆計錄
+```{r,paged.print=FALSE}
+# Call head() on mtcars
+head(mtcars)
+```
+
+🌻 商業數據通常會是表格的型式，通常每個row代表一個分析對象(車型)，每個column(`mpg`耗油量,`cyl`汽缸數,...)代表分析對象的某一個屬性。
+
+<br>
+
+##### Have a look at the structure
+
+`str()`可以看出資料物件的資料種類(data frame)和它的內部結構
+```{r}
+# Investigate the structure of mtcars with `str()`
+str(mtcars)
+```
+
+##### Creating a data frame
+將八大行星的屬性紀錄在`planets_df`這一個資料框裡面
+```{r,paged.print=FALSE}
+# Definition of vectors
+name <- c("Mercury", "Venus", "Earth", 
+          "Mars", "Jupiter", "Saturn", 
+          "Uranus", "Neptune")
+type <- c("Terrestrial planet", 
+          "Terrestrial planet", 
+          "Terrestrial planet", 
+          "Terrestrial planet", "Gas giant", 
+          "Gas giant", "Gas giant", "Gas giant")
+diameter <- c(0.382, 0.949, 1, 0.532, 
+              11.209, 9.449, 4.007, 3.883)
+rotation <- c(58.64, -243.02, 1, 1.03, 
+              0.41, 0.43, -0.72, 0.67)
+rings <- c(FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE)
+
+# Create a data frame from the vectors
+planets_df <- data.frame(name,type,diameter,rotation,rings)
+  
+planets_df
+```
+
+##### Creating a data frame (2)
+```{r}
+# Check the structure of planets_df with `str`
+str(planets_df)
+```
+
+##### Selection of data frame elements
+因為資料框是一個二維結構，所以要抽取他的某一個部分也需要兩個索引(`[,]`)
+```{r,paged.print=FALSE}
+# 位置索引 Print out diameter of Mercury (row 1, column 3) with `[1,3]`
+planets_df[1,3]
+```
+
+```{r,paged.print=FALSE}
+# 位置索引 Print out data for Mars (entire fourth row) with `[4,]`
+planets_df[4,]
+```
+
+##### Selection of data frame elements (2)
+位置索引、名稱索引和條件索引可以混合使用
+```{r}
+# Select first 5 values of diameter column
+planets_df[1:5,"diameter"]
+```
+
+##### Only planets with rings
+`$`符號可以用來抽取資料框的某一個column，注意一下，資料框(data frame)的一個column其實是一個向量(vector)
+```{r,paged.print=FALSE}
+# Select the rings variable from planets_df
+rings_vector <- planets_df$rings
+  
+# Print out rings_vector
+rings_vector
+```
+
+##### Only planets with rings (2)
+因為`rings_vector`是一個邏輯向量，我們可以用它當邏輯索引
+```{r,paged.print=FALSE}
+# Adapt the code to select all columns for planets with rings
+planets_df[rings_vector, ]
+```
+
+##### Only planets with rings but shorter
+`subset()`可以依條件對資料框做篩選
+```{r,paged.print=FALSE}
+# Select planets with diameter < 1 with `subset(df, condition)`
+subset(planets_df, subset = diameter < 1)
+```
+
+```{r,paged.print=FALSE}
+planets_df[planets_df$diameter>1, ]
+```
+
+
+##### Sorting
+`order()`會以整數向量的行式回傳向量中每個值的排序(由小到大)
+```{r}
+# Play around with the `order()` function in the console
+order(c(50,10,40,20,30))
+
+# 最小的是排在第2位的`10`
+# 第二小的是排在第4位的`20`
+# ...
+# 最大的是排在第1位的`50`
+```
+
+##### Sorting your data frame
+我們可以依直徑的大小(從小到大)對八大行星做一個排序，將次序向量放在`positions`裡面
+```{r, paged.print=FALSE}
+# Use order() to create order index by diameter
+positions <- order(planets_df$diameter)
+```
+
+用次序向量(`positions`)作索引，等於是對資料框(依`diameter`從小到大)作排序
+```{r, paged.print=FALSE}
+# Use positions to sort planets_df with `df[order_index,]`
+planets_df[positions,]
+```
+
+
+<br><hr>
+
+### 6. Lists 序列
+<z>序列(list)</z>是比較複雜的一種資料結構，基本上各種不同結構的物件都可以依序放在同一個序列裡面，在這一個章節我們先簡單的示範一下序列的製作和操作，在後續的課程單元之中會再用實例講解系列的操作。 
+
+As opposed to vectors, lists can hold components of different types, just as your to-do lists can contain different categories of tasks. This chapter will teach you how to create, name, and subset these lists.
+
+##### Lists, why would you need them?
+Congratulations! At this point in the course you are already familiar with:
+
++ Vectors (one dimensional array): can hold numeric, character or logical values. The elements in a vector all have the same data type.
++ Matrices (two dimensional array): can hold numeric, character or logical values. The elements in a matrix all have the same data type.
++ Data frames (two-dimensional objects): can hold numeric, character or logical values. Within a column all elements have the same data type, but different columns can be of different data type.
+Pretty sweet for an R newbie, right? 
+
+##### Lists, why would you need them? (2)
+A list in R is similar to your to-do list at work or school: the different items on that list most likely differ in length, characteristic, and type of activity that has to be done.
+
+A list in R allows you to gather a variety of objects under one name (that is, the name of the list) in an ordered way. These objects can be matrices, vectors, data frames, even other lists, etc. It is not even required that these objects are related to each other in any way.
+
+You could say that a list is some kind super data type: you can store practically any piece of information in it!
+
+##### Creating a list
+將向量(my_vector)、矩陣(my_matrix)和資料框(my_df)放在同一個序列(my_list)之中
+```{r, paged.print=FALSE}
+# Vector with numerics from 1 up to 10
+my_vector <- 1:10 
+
+# Matrix with numerics from 1 up to 9
+my_matrix <- matrix(1:9, ncol = 3)
+
+# First 10 elements of the built-in data frame mtcars
+my_df <- mtcars[1:10,]
+
+# Construct list with these different elements:
+my_list <- list(my_vector,my_matrix,my_df)
+
+my_list
+```
+`my_list`裡面有三個子物件但這些子物件並沒有名稱
+
+
+##### Creating a named list
+我們可以在產生`my_list`時,對每一個子物件指定名稱
+```{r,paged.print=FALSE}
+# Adapt list() call to change the components names to `vec`, `mat` and `df` 
+my_list <- list(vec=my_vector, mat=my_matrix, df=my_df)
+
+# Print out my_list
+my_list
+```
+
+然後我們就可以依名稱抽取該序列之中的子物件
+```{r}
+my_list$mat
+```
+
+
+##### Creating a named list (2)
+將一部電影("The Shining")的資料放在一個序列(`shining_list`)裡面
+```{r,paged.print=FALSE}
+# The variables mov, act and rev are available
+mov="The Shining"
+act = c("Jack Nicholson","Shelley Duvall","Danny Lloyd",
+        "Scatman Crothers","Barry Nelson")
+rev = data.frame(
+  scores = c(4.5,4.0,5.0),
+  sources = c("IMDb1","IMDb2","IMDb3"),
+  comments = c(
+    "Best Horror Film I Have Ever Seen",
+    "A truly brilliant and scary film from Stanley Kubrick",
+    "A masterpiece of psychological horror"))
+
+# Finish the code to build shining_list
+shining_list <- list(
+  moviename = mov,actors=act,reviews=rev)
+
+shining_list
+```
+
+##### Selecting elements from a list
+```{r}
+# Print out the vector representing the actors
+shining_list$actors
+
+# Print the second element of the vector representing the actors
+shining_list$actors[2]
+```
+
+##### Creating a new list for another movie
+將另一部電影("The Departed")的資料放在另一個序列(`shining_list`)裡面
+```{r, paged.print=F}
+# define the comments and scores vectors
+scores <- c(4.6, 5, 4.8, 5, 4.2)
+comments <- c("I would watch it again", "Amazing!", "I liked it", 
+              "One of the best movies","Fascinating plot")
+movie_title = "The Departed"
+movie_actors = c( "Leonardo DiCaprio","Matt Damon","Jack Nicholson",
+                  "Mark Wahlberg","Vera Farmiga","Martin Sheen")
+
+# Save the average of the scores vector as avg_review
+avg_review = mean(scores)
+
+# Combine scores and comments into the reviews_df data frame
+reviews_df = data.frame(scores, comments)
+
+# Create a list, called `departed_list`, 
+# that contains the `movie_title`, `movie_actors`, 
+# reviews data frame as `reviews_df`, 
+# and the average review score as `avg_review`, and print it out.
+departed_list = list( 
+  movie_title, movie_actors, 
+  reviews_df, avg_review)
+
+departed_list
+```
+
+<br><br><hr>
+
+
