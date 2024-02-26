@@ -98,7 +98,7 @@ c('Amy','Bob','Cindy','Danny') == c('Danny','Cindy')
 
 ❓ What happen if I do ...
 ```{r eval=F}
-c('Amy','Bob','Cindy','Danny') == c('Danny', 'Cindy')
+c('Amy','Bob','Cindy','Danny') == c('Cindy','Danny')
 ```
 
 ❓ What if ...
