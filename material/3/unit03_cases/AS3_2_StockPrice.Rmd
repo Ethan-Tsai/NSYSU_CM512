@@ -82,9 +82,7 @@ __§ 1.1__ Our five datasets all have the same number of observations. How many 
 ```{r}
 #
 sapply(L, count)
-#
 ```
-
 
 __§ 1.2__ What is the earliest year in our datasets?
 ```{r}
@@ -93,7 +91,6 @@ f<-function(df){
   min(df$Date)
 }
 lapply(L,f)
-#
 ```
 
 __§ 1.3__ What is the latest year in our datasets?
@@ -103,42 +100,36 @@ f<-function(df){
   max(df$Date)
 }
 lapply(L,f)
-#
 ```
 
 __§ 1.4__ What is the mean stock price of IBM over this time period?
 ```{r}
 #
 mean(L$IBM$StockPrice)
-#
 ```
 
 __§ 1.5__ What is the minimum stock price of General Electric (GE) over this time period?
 ```{r}
 #
 min(L$GE$StockPrice)
-#
 ```
 
 __§ 1.6__ What is the maximum stock price of Coca-Cola over this time period?
 ```{r}
 #
 max(L$Coke$StockPrice)
-#
 ```
 
 __§ 1.7__ What is the median stock price of Boeing over this time period?
 ```{r}
 #
 median(L$Boeing$StockPrice)
-#
 ```
 
 __§ 1.8__ What is the standard deviation of the stock price of Procter & Gamble over this time period?
 ```{r}
 #
 sd(L$PnG$StockPrice)
-#
 ```
 
 <br><hr>
@@ -149,39 +140,33 @@ __§ 2.1__ Around what year did Coca-Cola has its highest stock price in this ti
 ```{r}
 #
 plot(L$Coke$Date,L$Coke$StockPrice,type ='l')
-#
 ```
 
 
 __§ 2.2__ In March of 2000, the technology bubble burst, and a stock market crash occurred. According to this plot, which company's stock dropped more?
 ```{r}
 #
-
 plot(L$IBM$Date,L$IBM$StockPrice,type='l',col='orange')
 lines(L$GE$Date,L$GE$StockPrice,type='l',col ='yellow')
 lines(L$PnG$Date,L$PnG$StockPrice,type='l',col ='red')
 lines(L$Coke$Date,L$Coke$StockPrice,type='l',col ='black')
 lines(L$Boeing$Date,L$Boeing$StockPrice,type='l',col ='blue')
 abline(v=as.Date(c("2000-03-01","1983-01-01","1984-01-01")),col='gray',lty=3)
-#
 ```
 
 __§ 2.3__ (a) Around 1983, the stock for one of these companies (Coca-Cola or Procter and Gamble) was going up, while the other was going down. Which one was going up? 
 ```{r}
-#
 # going up: Coca-Cola
-#
 ```
 
 (b) In the time period shown in the plot, which stock generally has lower values?
 ```{r}
 #
-#
 f<-function(df){
   mean(df$StockPrice)
 }
 lapply(L,f)
-#
+
 # lower values: Boeing
 ```
 
@@ -200,16 +185,12 @@ abline(v=as.Date(c("2000-03-01","2000-05-01")),col='gray',lty=3)
 
 __§ 3.1__ Which stock fell the most right after the technology bubble burst in March 2000?
 ```{r}
-#
 # GE
-#
 ```
 
 __§ 3.2__ Which stock reaches the highest value in the time period 1995-2005?
 ```{r}
-#
 # IBM
-#
 ```
 
 __§ 3.3__ In October of 1997, there was a global stock market crash that was caused by an economic crisis in Asia. Comparing September 1997 to November 1997, which companies saw a decreasing trend in their stock price? (Select all that apply.)
@@ -221,7 +202,7 @@ lines(L$PnG$Date,L$PnG$StockPrice,type='l',col ='red')
 lines(L$Coke$Date,L$Coke$StockPrice,type='l',col ='black')
 lines(L$Boeing$Date,L$Boeing$StockPrice,type='l',col ='blue')
 abline(v=as.Date(c("1997-09-01","1997-11-01")),col='gray',lty=3)
-#
+
 # PnG & Boeing
 ```
 
@@ -234,7 +215,7 @@ lines(L$PnG$Date,L$PnG$StockPrice,type='l',col ='red')
 lines(L$Coke$Date,L$Coke$StockPrice,type='l',col ='black')
 lines(L$Boeing$Date,L$Boeing$StockPrice,type='l',col ='blue')
 abline(v=as.Date(c("2004-01-01","2005-12-31")),col='gray',lty=3)
-#
+
 # Boeing
 ```
 
@@ -245,10 +226,15 @@ abline(v=as.Date(c("2004-01-01","2005-12-31")),col='gray',lty=3)
 ### Section-4 Monthly Trends
 
 __§ 4.1__ For IBM, compare the monthly averages to the overall average stock price. In which months has IBM historically had a higher stock price (on average)? Select all that apply.
+
 ```{r}
-#
-tapply(L$IBM$StockPrice,format(L$IBM$Date,'%m'), mean)
-#
+IBM_Mavg=tapply(L$IBM$StockPrice,format(L$IBM$Date,'%m'), mean)
+IBM_Mavg
+```
+
+```{r}
+subset(IBM_Mavg,IBM_Mavg>=mean(L$IBM$StockPrice))
+#1,2,3,4,5 (months)
 ```
 
 __§ 4.2__ General Electric and Coca-Cola both have their highest average stock price in the same month. Which month is this?
@@ -256,7 +242,7 @@ __§ 4.2__ General Electric and Coca-Cola both have their highest average stock 
 #
 sort(tapply(L$GE$StockPrice,format(L$GE$Date,'%m'), mean),decreasing = T)
 sort(tapply(L$Coke$StockPrice,format(L$Coke$Date,'%m'), mean),decreasing = T)
-#
+
 #April
 ```
 
@@ -267,7 +253,7 @@ mon_ave = sapply(L, function(df) {
   tapply(df$StockPrice, format(df$Date,'%m'), mean)})
 
 mon_ave
-#
+
 # December
 ```
 
