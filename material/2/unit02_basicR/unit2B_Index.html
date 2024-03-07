@@ -442,7 +442,7 @@ display: none;
 
 <h1 class="title toc-ignore">UNIT2B：索引 (Index)</h1>
 <h4 class="author">Tony Chuo, NSYSU</h4>
-<h4 class="date">2024-02-26 11:26:32</h4>
+<h4 class="date">2024-02-27 14:21:40</h4>
 
 </div>
 
@@ -550,12 +550,12 @@ defined below …
 <pre><code>[1] &quot;Bob&quot;    &quot;Danny&quot;  &quot;Edward&quot;</code></pre>
 <p><span style="font-size:16px">🗿</span>: list the names of those who
 higher than 180</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co">#</span></span>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="co">#  only when height&gt;180</span></span>
 <span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>name[height<span class="sc">&gt;</span><span class="dv">180</span>]</span></code></pre></div>
 <pre><code>[1] &quot;Danny&quot;</code></pre>
 <p><span style="font-size:16px">🗿</span>: list the names of those who
 higher than 180 and skin color is “yellow”</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="co">#</span></span>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="co"># only when height&gt;180 and skin is yellow</span></span>
 <span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a>name[height<span class="sc">&gt;</span><span class="dv">180</span> <span class="sc">&amp;</span> skin_color<span class="sc">==</span><span class="st">&quot;yellow&quot;</span>]</span></code></pre></div>
 <pre><code>[1] &quot;Danny&quot;</code></pre>
 <p><span style="font-size:16px">🗿</span>: calculate the average height
@@ -564,15 +564,19 @@ of males</p>
 <pre><code>[1] 172.7</code></pre>
 <p><span style="font-size:16px">🗿</span>: calculate the total number of
 buys (<code>noBuy</code>) by females</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="co">#</span></span>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" tabindex="-1"></a><span class="co"># select gender in nobuy and sum them together</span></span>
 <span id="cb39-2"><a href="#cb39-2" tabindex="-1"></a><span class="fu">sum</span>(noBuy[gender<span class="sc">==</span><span class="st">&quot;F&quot;</span>])</span></code></pre></div>
 <pre><code>[1] 4</code></pre>
 <p><span style="font-size:16px">🗿</span>: count the number of white
 female</p>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="co">#</span></span>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" tabindex="-1"></a><span class="co">#1</span></span>
 <span id="cb41-2"><a href="#cb41-2" tabindex="-1"></a><span class="fu">length</span>(name[skin_color<span class="sc">==</span><span class="st">&quot;white&quot;</span><span class="sc">&amp;</span>gender<span class="sc">==</span><span class="st">&quot;F&quot;</span>])</span></code></pre></div>
 <pre><code>[1] 1</code></pre>
-<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="co">#</span></span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" tabindex="-1"></a><span class="co">#2</span></span>
+<span id="cb43-2"><a href="#cb43-2" tabindex="-1"></a><span class="fu">table</span>(name[skin_color<span class="sc">==</span><span class="st">&quot;white&quot;</span><span class="sc">&amp;</span>gender<span class="sc">==</span><span class="st">&quot;F&quot;</span>])</span></code></pre></div>
+<pre><code>
+Cindy 
+    1 </code></pre>
 <br>
 <hr>
 </div>
@@ -589,17 +593,17 @@ and<br />
 <li>each column represents an an attribute or measure of interest.
 <br></li>
 </ul>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">data.frame</span>(</span>
-<span id="cb44-2"><a href="#cb44-2" tabindex="-1"></a>  <span class="at">noBuy =</span> <span class="fu">c</span>(3L, 5L, 1L, 1L, 3L),</span>
-<span id="cb44-3"><a href="#cb44-3" tabindex="-1"></a>  <span class="at">height =</span> <span class="fu">c</span>(<span class="dv">175</span>, <span class="dv">168</span>, <span class="dv">180</span>, <span class="dv">181</span>, <span class="dv">169</span>),</span>
-<span id="cb44-4"><a href="#cb44-4" tabindex="-1"></a>  <span class="at">isMale =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>),</span>
-<span id="cb44-5"><a href="#cb44-5" tabindex="-1"></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">&quot;Amy&quot;</span>, <span class="st">&quot;Bob&quot;</span>, <span class="st">&quot;Cindy&quot;</span>, <span class="st">&quot;Danny&quot;</span>, <span class="st">&quot;Edward&quot;</span>),</span>
-<span id="cb44-6"><a href="#cb44-6" tabindex="-1"></a>  <span class="at">gender =</span> <span class="fu">factor</span>( <span class="fu">c</span>(<span class="st">&quot;F&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;M&quot;</span>) ),</span>
-<span id="cb44-7"><a href="#cb44-7" tabindex="-1"></a>  <span class="at">skin_color =</span> <span class="fu">factor</span>( <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;black&quot;</span>, <span class="st">&quot;white&quot;</span>, <span class="st">&quot;yellow&quot;</span>, <span class="st">&quot;white&quot;</span>)),</span>
-<span id="cb44-8"><a href="#cb44-8" tabindex="-1"></a>  <span class="at">stringsAsFactors=</span><span class="cn">FALSE</span></span>
-<span id="cb44-9"><a href="#cb44-9" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">data.frame</span>(</span>
+<span id="cb45-2"><a href="#cb45-2" tabindex="-1"></a>  <span class="at">noBuy =</span> <span class="fu">c</span>(3L, 5L, 1L, 1L, 3L),</span>
+<span id="cb45-3"><a href="#cb45-3" tabindex="-1"></a>  <span class="at">height =</span> <span class="fu">c</span>(<span class="dv">175</span>, <span class="dv">168</span>, <span class="dv">180</span>, <span class="dv">181</span>, <span class="dv">169</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" tabindex="-1"></a>  <span class="at">isMale =</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>),</span>
+<span id="cb45-5"><a href="#cb45-5" tabindex="-1"></a>  <span class="at">name =</span> <span class="fu">c</span>(<span class="st">&quot;Amy&quot;</span>, <span class="st">&quot;Bob&quot;</span>, <span class="st">&quot;Cindy&quot;</span>, <span class="st">&quot;Danny&quot;</span>, <span class="st">&quot;Edward&quot;</span>),</span>
+<span id="cb45-6"><a href="#cb45-6" tabindex="-1"></a>  <span class="at">gender =</span> <span class="fu">factor</span>( <span class="fu">c</span>(<span class="st">&quot;F&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;F&quot;</span>, <span class="st">&quot;M&quot;</span>, <span class="st">&quot;M&quot;</span>) ),</span>
+<span id="cb45-7"><a href="#cb45-7" tabindex="-1"></a>  <span class="at">skin_color =</span> <span class="fu">factor</span>( <span class="fu">c</span>(<span class="st">&quot;black&quot;</span>, <span class="st">&quot;black&quot;</span>, <span class="st">&quot;white&quot;</span>, <span class="st">&quot;yellow&quot;</span>, <span class="st">&quot;white&quot;</span>)),</span>
+<span id="cb45-8"><a href="#cb45-8" tabindex="-1"></a>  <span class="at">stringsAsFactors=</span><span class="cn">FALSE</span></span>
+<span id="cb45-9"><a href="#cb45-9" tabindex="-1"></a>  )</span></code></pre></div>
 <p>Data frame is easier to <z>examine</z> …</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" tabindex="-1"></a>df</span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" tabindex="-1"></a>df</span></code></pre></div>
 <pre><code>  noBuy height isMale   name gender skin_color
 1     3    175  FALSE    Amy      F      black
 2     5    168   TRUE    Bob      M      black
@@ -607,19 +611,19 @@ and<br />
 4     1    181   TRUE  Danny      M     yellow
 5     3    169   TRUE Edward      M      white</code></pre>
 <p>to <z>select</z> …</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" tabindex="-1"></a><span class="fu">subset</span>(df, isMale <span class="sc">&amp;</span> skin_color <span class="sc">==</span> <span class="st">&quot;black&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" tabindex="-1"></a><span class="fu">subset</span>(df, isMale <span class="sc">&amp;</span> skin_color <span class="sc">==</span> <span class="st">&quot;black&quot;</span>)</span></code></pre></div>
 <pre><code>  noBuy height isMale name gender skin_color
 2     5    168   TRUE  Bob      M      black</code></pre>
 <p>to <z>summaries</z></p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a><span class="fu">mean</span>(df<span class="sc">$</span>height)</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" tabindex="-1"></a><span class="fu">mean</span>(df<span class="sc">$</span>height)</span></code></pre></div>
 <pre><code>[1] 174.6</code></pre>
 <p>to count <z>分類計數</z></p>
-<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>gender)</span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>gender)</span></code></pre></div>
 <pre><code>
 F M 
 2 3 </code></pre>
 <p>to <z>分類統計</z></p>
-<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" tabindex="-1"></a><span class="fu">tapply</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>gender, mean)</span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" tabindex="-1"></a><span class="fu">tapply</span>(df<span class="sc">$</span>height, df<span class="sc">$</span>gender, mean)</span></code></pre></div>
 <pre><code>    F     M 
 177.5 172.7 </code></pre>
 <p><br></p>
@@ -658,33 +662,33 @@ specific column</li>
 </ul></li>
 </ul>
 <p>Below are some examples …</p>
-<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" tabindex="-1"></a>df[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)]</span></code></pre></div>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" tabindex="-1"></a>df[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>)]</span></code></pre></div>
 <pre><code>  height isMale
 1    175  FALSE
 2    168   TRUE</code></pre>
-<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" tabindex="-1"></a>df[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), ]</span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" tabindex="-1"></a>df[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), ]</span></code></pre></div>
 <pre><code>  noBuy height isMale name gender skin_color
 1     3    175  FALSE  Amy      F      black
 2     5    168   TRUE  Bob      M      black</code></pre>
-<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" tabindex="-1"></a>df[df<span class="sc">$</span>height <span class="sc">&lt;</span> <span class="dv">175</span> <span class="sc">&amp;</span> df<span class="sc">$</span>isMale, ]</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" tabindex="-1"></a>df[df<span class="sc">$</span>height <span class="sc">&lt;</span> <span class="dv">175</span> <span class="sc">&amp;</span> df<span class="sc">$</span>isMale, ]</span></code></pre></div>
 <pre><code>  noBuy height isMale   name gender skin_color
 2     5    168   TRUE    Bob      M      black
 5     3    169   TRUE Edward      M      white</code></pre>
-<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" tabindex="-1"></a>df[df<span class="sc">$</span>height <span class="sc">&lt;</span> <span class="dv">175</span> <span class="sc">&amp;</span> df<span class="sc">$</span>isMale, <span class="st">&quot;name&quot;</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" tabindex="-1"></a>df[df<span class="sc">$</span>height <span class="sc">&lt;</span> <span class="dv">175</span> <span class="sc">&amp;</span> df<span class="sc">$</span>isMale, <span class="st">&quot;name&quot;</span>]</span></code></pre></div>
 <pre><code>[1] &quot;Bob&quot;    &quot;Edward&quot;</code></pre>
-<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" tabindex="-1"></a>df<span class="sc">$</span>name[df<span class="sc">$</span>height <span class="sc">&lt;</span> <span class="dv">175</span> <span class="sc">&amp;</span> df<span class="sc">$</span>isMale]</span></code></pre></div>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" tabindex="-1"></a>df<span class="sc">$</span>name[df<span class="sc">$</span>height <span class="sc">&lt;</span> <span class="dv">175</span> <span class="sc">&amp;</span> df<span class="sc">$</span>isMale]</span></code></pre></div>
 <pre><code>[1] &quot;Bob&quot;    &quot;Edward&quot;</code></pre>
-<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale)</span></code></pre></div>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale)</span></code></pre></div>
 <pre><code>  noBuy height isMale   name gender skin_color
 2     5    168   TRUE    Bob      M      black
 5     3    169   TRUE Edward      M      white</code></pre>
-<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale, name)</span></code></pre></div>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale, name)</span></code></pre></div>
 <pre><code>    name
 2    Bob
 5 Edward</code></pre>
-<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale)<span class="sc">$</span>name</span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale)<span class="sc">$</span>name</span></code></pre></div>
 <pre><code>[1] &quot;Bob&quot;    &quot;Edward&quot;</code></pre>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale, <span class="fu">c</span>(name, noBuy))</span></code></pre></div>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" tabindex="-1"></a><span class="fu">subset</span>(df, height<span class="sc">&lt;</span><span class="dv">175</span> <span class="sc">&amp;</span> isMale, <span class="fu">c</span>(name, noBuy))</span></code></pre></div>
 <pre><code>    name noBuy
 2    Bob     5
 5 Edward     3</code></pre>
@@ -694,21 +698,21 @@ specific column</li>
 of each underlying code chunks as remarks …<br>
 </p>
 <p>For an example</p>
-<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" tabindex="-1"></a>df<span class="sc">$</span>name[df<span class="sc">$</span>isMale] <span class="co"># names of all males  </span></span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" tabindex="-1"></a>df<span class="sc">$</span>name[df<span class="sc">$</span>isMale] <span class="co"># names of all males  </span></span></code></pre></div>
 <pre><code>[1] &quot;Bob&quot;    &quot;Danny&quot;  &quot;Edward&quot;</code></pre>
-<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" tabindex="-1"></a>df[df<span class="sc">$</span>height <span class="sc">&gt;</span> <span class="dv">180</span> , <span class="st">&quot;name&quot;</span>] <span class="co"># names of those who higher than 180</span></span></code></pre></div>
+<div class="sourceCode" id="cb76"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" tabindex="-1"></a>df[df<span class="sc">$</span>height <span class="sc">&gt;</span> <span class="dv">180</span> , <span class="st">&quot;name&quot;</span>] <span class="co"># names of those who higher than 180</span></span></code></pre></div>
 <pre><code>[1] &quot;Danny&quot;</code></pre>
-<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" tabindex="-1"></a><span class="fu">subset</span>(df, height <span class="sc">&gt;</span> <span class="dv">170</span> <span class="sc">&amp;</span> <span class="sc">!</span>isMale)<span class="sc">$</span>name <span class="co"># names of female who is higher than 170</span></span></code></pre></div>
+<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" tabindex="-1"></a><span class="fu">subset</span>(df, height <span class="sc">&gt;</span> <span class="dv">170</span> <span class="sc">&amp;</span> <span class="sc">!</span>isMale)<span class="sc">$</span>name <span class="co"># names of female who is higher than 170</span></span></code></pre></div>
 <pre><code>[1] &quot;Amy&quot;   &quot;Cindy&quot;</code></pre>
-<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" tabindex="-1"></a><span class="fu">mean</span>(df<span class="sc">$</span>height[df<span class="sc">$</span>isMale]) <span class="co"># to caculate the average of males&#39; height</span></span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" tabindex="-1"></a><span class="fu">mean</span>(df<span class="sc">$</span>height[df<span class="sc">$</span>isMale]) <span class="co"># to calculate the average of males&#39; height</span></span></code></pre></div>
 <pre><code>[1] 172.7</code></pre>
-<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" tabindex="-1"></a>df<span class="sc">$</span>height[<span class="sc">!</span>df<span class="sc">$</span>isMale] <span class="sc">%&gt;%</span> mean <span class="co"># the mean of female height</span></span></code></pre></div>
+<div class="sourceCode" id="cb82"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" tabindex="-1"></a>df<span class="sc">$</span>height[<span class="sc">!</span>df<span class="sc">$</span>isMale] <span class="sc">%&gt;%</span> mean <span class="co"># get height of all female and then calculate their average  </span></span></code></pre></div>
 <pre><code>[1] 177.5</code></pre>
-<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" tabindex="-1"></a><span class="fu">sum</span>( <span class="fu">subset</span>(df, <span class="sc">!</span>isMale)<span class="sc">$</span>noBuy ) <span class="co"># total number of noBuy from all female</span></span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" tabindex="-1"></a><span class="fu">sum</span>( <span class="fu">subset</span>(df, <span class="sc">!</span>isMale)<span class="sc">$</span>noBuy ) <span class="co"># total number of noBuy from female</span></span></code></pre></div>
 <pre><code>[1] 4</code></pre>
-<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" tabindex="-1"></a><span class="fu">subset</span>(df, skin_color <span class="sc">==</span> <span class="st">&quot;white&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>isMale ) <span class="sc">%&gt;%</span> nrow <span class="co"># number of white female</span></span></code></pre></div>
+<div class="sourceCode" id="cb86"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" tabindex="-1"></a><span class="fu">subset</span>(df, skin_color <span class="sc">==</span> <span class="st">&quot;white&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>isMale ) <span class="sc">%&gt;%</span> nrow <span class="co"># number of white female</span></span></code></pre></div>
 <pre><code>[1] 1</code></pre>
-<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" tabindex="-1"></a><span class="fu">sum</span>(df<span class="sc">$</span>skin_color <span class="sc">==</span> <span class="st">&quot;white&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>df<span class="sc">$</span>isMale ) <span class="co"># number of white female</span></span></code></pre></div>
+<div class="sourceCode" id="cb88"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" tabindex="-1"></a><span class="fu">sum</span>(df<span class="sc">$</span>skin_color <span class="sc">==</span> <span class="st">&quot;white&quot;</span> <span class="sc">&amp;</span> <span class="sc">!</span>df<span class="sc">$</span>isMale ) <span class="co"># number of white female</span></span></code></pre></div>
 <pre><code>[1] 1</code></pre>
 <br><br><br>
 <hr>

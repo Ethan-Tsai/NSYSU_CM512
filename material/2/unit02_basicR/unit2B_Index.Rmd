@@ -140,14 +140,14 @@ name[isMale]
 <span style="font-size:16px">`r "\U1F5FF"`</span>:
 list the names of those who higher than 180
 ```{r}
-#
+#  only when height>180
 name[height>180]
 ```
 
 <span style="font-size:16px">`r "\U1F5FF"`</span>:
 list the names of those who higher than 180 and skin color is "yellow" 
 ```{r}
-#
+# only when height>180 and skin is yellow
 name[height>180 & skin_color=="yellow"]
 ```
 
@@ -160,16 +160,17 @@ mean( height[gender == "M"] )
 <span style="font-size:16px">`r "\U1F5FF"`</span>:
 calculate the total number of buys (`noBuy`) by females
 ```{r}
-#
+# select gender in nobuy and sum them together
 sum(noBuy[gender=="F"])
 ```
 
 <span style="font-size:16px">`r "\U1F5FF"`</span>:
 count the number of white female
 ```{r}
-#
+#1
 length(name[skin_color=="white"&gender=="F"])
-#
+#2
+table(name[skin_color=="white"&gender=="F"])
 ```
 
 <br><hr>
@@ -282,15 +283,15 @@ subset(df, height > 170 & !isMale)$name # names of female who is higher than 170
 ```
 
 ```{r}
-mean(df$height[df$isMale]) # to caculate the average of males' height
+mean(df$height[df$isMale]) # to calculate the average of males' height
 ```
 
 ```{r}
-df$height[!df$isMale] %>% mean # the mean of female height
+df$height[!df$isMale] %>% mean # get height of all female and then calculate their average  
 ```
 
 ```{r}
-sum( subset(df, !isMale)$noBuy ) # total number of noBuy from all female
+sum( subset(df, !isMale)$noBuy ) # total number of noBuy from female
 ```
 
 ```{r}

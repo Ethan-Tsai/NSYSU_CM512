@@ -167,6 +167,7 @@ D$f.align = factor(D$align, levels=c("Good","Neutral","Bad"))
 par(mfrow=c(1,2), cex=0.7)  
 table(D$align) %>% barplot(main="align")
 table(D$f.align) %>% barplot(main="f.align")
+
 ```
 
 我們將 `eye`也轉為因素變數
@@ -337,6 +338,17 @@ tapply(D$align == "Neutral", D$sex, sum)
 
 ```{r}
 tapply(D$align == "Neutral", D$sex, mean)
+
+tapply(D$eye == "Blue", D$sex, sum)
+
+tapply(D$hair == "", D$sex, mean)
+
+tapply(D$align == "", D$sex, mean)
+
+tapply(D$align == "Living", D$align, mean)
+
+
+tapply(D$align == "Bad", D$eye, mean)
 ```
 按性別統計中立的人的比例
 
