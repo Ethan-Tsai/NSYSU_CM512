@@ -1,0 +1,256 @@
+---
+title: TF1_資料彙整 
+author: 卓雍然, 中山大學 管理學術研究中心
+date: "`r Sys.time()`"
+output:
+  html_document:
+    highlight: pygments
+    theme: flatly
+    css: ../etc/style.css
+---
+<br>
+
+### 資料彙整流程
+
+<center>
+![Fig-1:交易資料彙整](fig/aggregation.jpg)
+</center>
+
+<hr>
+
+### 1. 交易項目計錄：`Z`
+
+```{r setup, echo=T, message=F, cache=F, warning=F}
+rm(list=ls(all=T))
+knitr::opts_chunk$set(paged.print=FALSE, comment = NA)
+pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr, vcd)
+```
+
+##### 1.1 讀進資料
+```{r}
+Z = read_csv("data/ta_feng_all_months_merged.csv") %>% 
+  data.frame %>% setNames(c(
+    "date","cust","age","area","cat","prod","qty","cost","price"))
+nrow(Z)
+```
+
+```{r}
+tibble(Z)
+```
+
+##### 日期格式轉換
+```{r fig.height=3.2, fig.width=7}
+Z$date = as.Date(Z$date, format="%m/%d/%Y")
+par(cex=0.8)
+hist(Z$date,'weeks',freq=T,las=2)
+```
+
+##### 年齡層級、郵遞區號
+```{r}
+age.group = c("<25","25-29","30-34","35-39","40-44",
+              "45-49","50-54","55-59","60-64",">65")
+Z$age = c(paste0("a",seq(24,69,5)),"a99")[match(Z$age,age.group,11)]
+Z$area = paste0("z",Z$area)
+```
+
+<center>
+![Fig-2:郵遞區號](fig/zipcode.png)
+</center>
+
+
+```{r fig.height=2.5, fig.width=7}
+par(mfrow=c(1,2),cex=0.7)
+table(Z$age, useNA='ifany') %>% barplot(main="Age Groups", las=2)
+table(Z$area,useNA='ifany') %>% barplot(main="Areas", las=2)
+```
+
+##### 處理離群值
+```{r}
+# Quantile of Variables
+sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995))
+```
+
+```{r}
+# Remove Outliers
+Z = subset(Z, qty<=24 & cost<=3800 & price<=4000) 
+nrow(Z)  
+```
+
+##### 彙總訂單 Assign Transaction ID
+把每一天、每一為顧客的交易項目彙總為一張訂單
+```{r}
+Z$tid = group_indices(Z, date, cust) # same customer same day
+```
+
+##### 資料總覽
+```{r}
+# No. cust, cat, prod, tid
+sapply(Z[c("cust","cat","prod","tid")], n_distinct)
+```
+<br><hr>
+
+### 2. 交易計錄：`X`
+
+##### 交易資料彙整
+```{r}
+X = Z %>% group_by(tid) %>% summarise(
+  date = min(date),          # 交易日期  
+  cust = min(cust),          # 顧客 ID
+  age = min(age),            # 顧客 年齡級別
+  area = min(area),          # 顧客 居住區別
+  items = n(),               # 交易項目(總)數
+  pieces = sum(qty),         # 產品(總)件數
+  total = sum(price),        # 交易(總)金額
+  gross = sum(price - cost)  # 毛利
+) %>% data.frame
+nrow(X) # 119422 
+```
+
+##### 處理離群值
+```{r}
+# Check Quantile & Remove Outliers
+sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999))
+```
+
+```{r}
+# Remove Outliers
+X = subset(X, items<=62 & pieces<95 & total<16000) # 119328
+```
+
+##### 交易摘要
+```{r}
+summary(X)    
+```
+
+##### 每周交易次數
+```{r fig.height=3, fig.width=7}
+par(cex=0.8)
+hist(X$date, "weeks", freq=T, las=2, main="No. Transaction per Week")
+```
+<br><hr>
+
+### 3. 顧客資料：`A`
+
+##### 顧客資料彙整
+```{r}
+d0 = max(X$date) + 1
+A = X %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% group_by(cust) %>% summarise(
+    r = min(days),      # recency
+    s = max(days),      # seniority
+    f = n(),            # frquency
+    m = mean(total),    # monetary
+    rev = sum(total),   # total revenue contribution
+    raw = sum(gross),   # total gross profit contribution
+    age = min(age),     # age group
+    area = min(area),   # area code
+  ) %>% data.frame      
+nrow(A) # 32241
+```
+
+```{r fig.height=2.5, fig.width=7.2}
+par(mfrow=c(1,2),cex=0.7)
+table(A$age, useNA='ifany') %>% barplot(main="Age Groups",las=2)
+table(A$area, useNA='ifany') %>% barplot(main="Areas",las=2)                
+```
+
+##### 顧客摘要
+```{r}
+summary(A) 
+```
+
+```{r fig.height=8}
+par(mfrow=c(3,2), mar=c(3,3,4,2))
+for(x in c('r','s','f','m')) 
+  hist(A[,x],freq=T,main=x,xlab="",ylab="",cex.main=2)
+hist(pmin(A$f,10),0:10,freq=T,xlab="",ylab="",cex.main=2)
+hist(log(A$m,10),freq=T,xlab="",ylab="",cex.main=2)
+```
+
+🌷 **偏態分佈的處理方法**
+
++ 對數轉換 - `log(A$m, 10)`
++ 固定上限 - `pmin(A$f, 10)`
+
+<br> 
+
+##### Check & Save
+```{r}
+is.na(Z) %>% colSums
+```
+
+```{r}
+is.na(X) %>% colSums
+```
+
+```{r}
+is.na(A) %>% colSums
+```
+
+```{r}
+A0 = A; X0 = X; Z0 = Z
+save(Z0, X0, A0, file="data/tf0.rdata")
+```
+
+<br><hr>
+
+### 4. 行銷企畫競賽 
+
+##### A.企畫項目
+
++ 1)利用既有和衍生的變數做顧客分群(標籤)
++ 2)根據顧客族群價值屬性，選取行銷重點、設定行銷目標
++ 3)製作模型：估計每一位顧客的：
+    + 回購機率
+    + 預期營收、預期獲利
+    + 終生價值
++ 4)根據顧客族群特徵，設計(至少兩項)行銷方案
++ 5)對方案的成本、效益進行(可以透過參數調整的)假設
++ 6)設計模擬程式，藉以： 
+    + 選擇行銷方案
+    + 設定方案參數
+    + 選擇行銷對象
+    + 估計成本效益
++ 7)做一個完整的行銷企劃報告：
+    + 經營現況
+    + 改善策略
+    + 行銷方案
+    + 預期成效
+
+##### B.評分項目
+
+1) 能從資料中找出重要的現象、結構、趨勢
+2) 能善用資料視覺化呈現重要發現
+3) 能找出特殊的、有價值的顧客族群
+4) 能找到或導出有預測力的變數
+5) 能根據分析的結果選擇策略重點、設定策略(量化)目標
+6) 能提出有效、有創意的行銷方案
+7) 能設計出合理的假設
+8) 能正確演練市場模擬的程序，清楚表達策略規劃的邏輯
+9) 整份行銷企劃的整體(影片+文案)品質
+10) 投入資源執行這一份企劃的意願
+
+<br><hr>
+
+### 5. 資料探索練習
+
++ 1)不同的年齡(或地理)族群的購買行為有什麼差異
++ 2)顧客在周末和周間的購買行為是一樣的嗎
++ 3)賣的最好的品類(品項) 
++ 4)銷售量或營收最大的品類(品項)獲利也是最大的嗎
++ 5)依據 ... 做顧客分群(市場區隔)
+    + RFM
+    + 年齡層、居住地區
+    + 曾購買的產品
+    + ...
++ 6)比較各族群的特徵
++ 7)...
++ 8)設定行銷目標和策略 
+
+##### 類別資料的分類統計
+```{r fig.height=6, fig.width=7.5}
+mosaic(~area+age, data=A, shade=T)
+```
+
+<br><br><br><br>
