@@ -1,0 +1,436 @@
+---
+title: "G5_草稿後半"
+output: html_document
+date: "2024-03-30"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+#1. 資料前處理
+
+pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr, vcd)
+load("data/tf0.rdata")
+sapply(list(cust=A0,tid=X0,items=Z0), nrow)
+
+```
+4.目標客群分析
+使用泡泡圖查看年齡區隔特徵
+
+```{r}
+pacman::p_load(vcd, magrittr, readr, caTools, ggplot2, dplyr, plotly)
+A0 %>% group_by(age) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=age, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=age)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("年齡區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+<br>
+#### 因a99人數過多，首先過濾掉
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(age) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=age, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=age)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("年齡區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+<br>
+#### 根據此圖，可以觀察到，a39與a44是屬於平均客單價與平均購買次數兩個都高的族群
+而a34則是雖有頗高的平均客單價，卻沒有相對高的平均購買次數。
+
+因此我們設定a34作為此次我們的目標客群。
+
+首先，我們可以先查看a34的地理分布是否有可以關注的點
+```{r}
+combined_data <- A0 %>%
+  filter(age == "a34" & !is.na(area)) %>%
+  group_by(age, area) %>%
+  summarise(
+    Group.Size = n(),              # 族群人數
+    avg.Freq = mean(f),            # 平均購買次數
+    avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  )
+
+# 建立泡泡圖
+ggplot(combined_data, aes(y = avg.Freq, x = avg.Revenue, size = Group.Size, color = paste(age, area))) +
+  geom_point(alpha = 0.5) +
+  geom_text(aes(label = paste(age, area)), vjust = -0.5) +
+  scale_size(range = c(5, 25)) +
+  theme_bw() +
+  ggtitle("年齡與地理區隔特徵 (泡泡大小:族群人數)") +
+  ylab("平均購買次數") +
+  xlab("平均客單價")
+
+```
+<br>
+將上述資訊以其他方式呈現
+```{r}
+ggplot(combined_data, aes(x = avg.Revenue, y = avg.Freq, fill = Group.Size)) +
+  geom_tile() +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  geom_text(aes(label = paste(age, area)), vjust = -0.5) +
+  theme_bw() +
+  ggtitle("年齡與地理區隔特徵 (熱圖:族群人數)") +
+  ylab("平均購買次數") +
+  xlab("平均客單價")
+```
+<br>
+此時，我們回過頭來檢視地理區格特徵
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+<br>
+可以明顯的發現說，於不分年紀的地理區隔所呈現出的平均客單價與平均購買次數
+竟然與a34的地理區隔所呈現的模式非常接近。
+<br>
+因此，若設定目標為提升Z110區的平均購買次數，將可以提高a34的消費額，並且整體族群的消費額也將提高。
+
+### 再來，我們可以關注品類和目標客群的關聯性
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+
+top20 = tapply(Z0$qty,Z0$cat,sum) %>% sort %>% tail(20) %>% names
+MOSA(~age+cat, Z0[Z0$cat %in% top20,])
+```
+
+```{r}
+MOSA(~cat+area, Z0[Z0$cat %in% top20,])
+```
+<br>
+## 我們的發現:
+對於[a34、Z110]的族群來說，品項120103有極低值。
+若是針對此品項進行活動，或許有望大幅提升消費情況。
+
+
+
+```{r}
+
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr, vcd,plotly)
+```
+
+```{r}
+library(magrittr)
+library(vcd)
+library(corrplot)
+```
+
+```{r}
+Z = read.csv("data/ta_feng_all_months_merged.csv") %>% data.frame %>% setNames(c("date","cust","age","area","cat","prod","qty","cost","price"))
+
+#date=交易日,cust=顧客ID,age=顧客年齡
+#area=郵遞區號105松山 106大安 110信義 114內湖 115南港 221汐止
+#cat=產品品類, prod=產品ID, qty=當筆購買數量,cost=成本,price=售價
+```
+
+```{r}
+Z$date = as.Date(Z$date, format="%m/%d/%Y")
+#日期格式轉換
+```
+
+```{r}
+age.group = c("<25","25-29","30-34","35-39","40-44",
+              "45-49","50-54","55-59","60-64",">65")
+Z$age = c(paste0("a",seq(24,69,5)),"a99")[match(Z$age,age.group,11)]
+Z$area = paste0("z",Z$area)
+#依年齡分組，間隔為5歲
+#再將分組設代號，a99為找不到年齡區間配對者
+#將地區設代號
+```
+
+```{r}
+nrow(Z)
+450000/817741
+550000/817741
+#資料區間:2000/11/1-2001/2/28 (共計4個月)
+#共計817741筆資料
+#a34-a44為主要消費力客群
+#a49-53總商品購買數量>a29以下客群(但獲利率待確認)
+#115南港&221汐止區為主要的消費地區
+#105松山,106大安,114內湖區三處消費力低
+#內湖的工商辦公大樓居多
+```
+
+```{r}
+par(mfrow=c(1,2),cex=0.5) 
+table(Z$age, useNA='ifany') %>% barplot(main="Age Groups", las=1,col="lightpink")
+table(Z$area,useNA='ifany') %>% barplot(main="Areas", las=2,col="lightblue")
+#mfrow=c(1,2) one row two column
+```
+
+```{r}
+sapply(Z[,7:9], quantile, prob=c(.99, .999, .9995,1))
+#排除離群值，只鎖定99.95%的數據
+Z = subset(Z, qty<=24 & cost<=3800 & price<=4000) 
+nrow(Z)  
+#總筆數817741減少559筆，變為817182筆
+Z$tid = group_indices(Z, date, cust) 
+#將同一天、同一顧客的交易項目彙總為一張訂單
+sapply(Z[c("cust","cat","prod","tid")], n_distinct)
+#資料總覽
+#sapply()對資料框中每列進行同一function
+#n_distince計算唯一值數量
+#合併後共計119422筆訂單,產品品類為2007項,不同顧客為32256名
+```
+
+```{r}
+X = Z %>% group_by(tid) %>% summarise(
+  date = min(date),          # 交易日期  
+  cust = min(cust),          # 顧客 ID
+  age = min(age),            # 顧客 年齡級別
+  area = min(area),          # 顧客 居住區別
+  items = n(),               # 交易項目(總)數
+  pieces = sum(qty),         # 產品(總)件數
+  total = sum(price),        # 交易(總)金額
+  gross = sum(price - cost)  # 毛利
+) %>% data.frame
+nrow(X) # 119422 
+```
+
+```{r}
+sapply(X[,6:9], quantile, prob=c(.999, .9995, .9999,1))
+X = subset(X, items<=62 & pieces<95 & total<16000) # 119328
+#移除離群值，只保留99.99%數據
+#訂單筆數由119422減少為119328筆
+summary(X)   
+```
+
+```{r}
+d0 = max(X$date) + 1
+A = X %>% mutate(
+  days = as.integer(difftime(d0, date, units="days"))
+  ) %>% group_by(cust) %>% summarise(
+    r = min(days),      # recency最小天數差異
+    s = max(days),      # seniority最大天數差異
+    f = n(),            # frequency頻率
+    m = mean(total),    # monetary金額的平均值
+    rev = sum(total),   # total revenue contribution總收入貢獻
+    raw = sum(gross),   # total gross profit contribution總毛利貢獻
+    age = min(age),     # age group
+    area = min(area),   # area code
+  ) %>% data.frame      
+nrow(A) # 32241
+```
+
+```{r}
+summary(A) 
+```
+
+```{r}
+A0 = A; X0 = X; Z0 = Z
+save(Z0, X0, A0, file="data/ta_feng_all_months_merged.csv")
+sapply(list(cust=A0,tid=X0,items=Z0), nrow)
+```
+
+```{r}
+Z0 %>% group_by(cat) %>% summarise(total=sum(price)) %>% arrange(desc(total))
+#營收最高單品:560201,560402,500201,320402	
+```
+
+```{r}
+cats = Z0 %>% group_by(cat) %>% summarise(
+  noProd = n_distinct(prod),
+  totalQty = sum(qty),#總數量
+  totalRev = sum(price),#單品總收入
+  totalGross = sum(price) - sum(cost),#單品總毛利
+  grossMargin = totalGross/totalRev,#單品毛利率
+  avgPrice = totalRev/totalQty #平均價格，總收入除以總數量
+  )
+#產品資訊子集
+```
+
+```{r}
+g1 = arrange(cats, desc(totalRev)) %>% 
+  mutate(pc=100*totalRev/sum(totalRev), cum.pc=cumsum(pc)) %>% 
+  head(40) %>% ggplot(aes(x=1:40)) +
+  geom_col(aes(y=cum.pc),fill='cyan',alpha=0.5) +
+  geom_col(aes(y=pc), fill='darkcyan',alpha=0.5) +
+  labs(title="前40大品類(累計)營收", y="(累計)營收貢獻(%)") +
+  theme_bw()
+g1
+#品類的營收
+#前25項品類已占總營收30%
+#前10項品項已占總營收20%
+#560201 68種不同的產品,毛利率為 6.67% ,平均單價為 293.48
+#560402 75 種不同的產品,毛利率為 6.23%,平均單價為 460.90
+#500201 17 種不同的產品,毛利率為 2.58%,平均單價為 129.90
+#110217 36 種不同的產品,毛利率為 -3.96%,平均單價為 153.67
+#320402 129 種不同的產品,毛利率為 23.59%,平均單價為 1,012.42
+```
+
+```{r}
+g2 = arrange(cats, desc(totalGross)) %>% 
+  mutate(pc=100*totalGross/sum(totalGross), cum.pc=cumsum(pc)) %>% 
+  head(40) %>% ggplot(aes(x=1:40)) +
+  geom_col(aes(y=cum.pc),fill='pink',alpha=0.5) +
+  geom_col(aes(y=pc), fill='magenta',alpha=0.5) +
+  labs(title="前40大品類(累計)獲利", y="(累計)獲利貢獻(%)") +
+  theme_bw()
+g2
+#品類的獲利
+#前30項品類已占總獲利25%
+```
+
+```{r}
+plotly::subplot(g1, g2)
+```
+
+```{r}
+top10 = tapply(Z0$qty,Z0$cat,sum) %>% sort %>% tail(10) %>% names
+#top20 是一個包含了銷售數量最高的前10個類別（cat）的名稱的向量
+```
+
+```{r}
+###MOSA(~age+cat, Z0[Z0$cat %in% top10,])
+#觀察各年齡層喜好厭惡的產品品項
+#560201 68種不同的產品,毛利率為 6.67% ,平均單價為 293.48 #29-39喜愛 <24 & >44不購買
+#560402 75 種不同的產品,毛利率為 6.23%,平均單價為 460.90
+#500201 17 種不同的產品,毛利率為 2.58%,平均單價為 129.90
+#110217 36 種不同的產品,毛利率為 -3.96%,平均單價為 153.67 #>49喜愛
+#320402 129 種不同的產品,毛利率為 23.59%,平均單價為 1,012.42
+#130315 29-39不喜愛購買
+#a34 非常喜愛560201,不喜愛120103,130206,130315
+#a39 喜愛560201 喜100205,不喜愛130315
+#a44 喜愛530101 非常不喜愛560201
+```
+
+
+```{r}
+####MOSA(~cat+area, Z0[Z0$cat %in% top10,])
+#觀察在銷售數量最高的前10個類別中，不同區域的銷售情況
+#115南港&221汐止區為主要的消費地區
+#105松山,106大安,114內湖區三處消費力低
+#area=郵遞區號105松山 106大安 110信義 114內湖 115南港 221汐止
+#Z115銷量最佳為120108,130206,135315 (同時在銷量信義區賣最差) 最差110401,560204
+#Z221銷量最佳為110401,120108,130206 銷量最差100205,100505
+```
+
+```{r}
+####X0$wday = format(X0$date, "%u")
+####par(cex=0.7, mar=c(2,3,2,1))
+####table(X0$wday) %>% barplot(main="No. Transactions in Week Days")
+#六日交易數較高
+```
+```{r}
+####MOSA(~age+wday, X0)
+#年齡與購物日的關聯性
+```
+
+```{r}
+####df = Z0 %>% filter(cat %in% top20) %>% mutate(wday = format(date, '%u'))
+####MOSA(~cat+wday, df)
+#130310周2-5購買量較高，六日則不消費的品項
+#500201周2-4購買量較高
+#530101,530201 六日購買量較高
+```
+
+```{r}
+####df = Z0 %>% filter(cat %in% top20) %>% mutate(wday = format(date, '%u'))
+####MOSA(~cat+wday, df)
+#130310周2-5購買量較高，六日則不消費的品項
+#500201周2-4購買量較高
+#530101,530201 六日購買量較高
+```
+
+```{r}
+###df = group_by(Z0, prod) %>% summarise(
+  ###solds=n(), qty=sum(qty), rev=sum(price), cost=sum(cost),
+  ###profit = rev - cost, margin = 100*profit/rev)  
+###L = lapply(c("profit","rev"), function(z) {
+  ###top_n(df, 300, df[,z,T]) %>% filter(margin > 0) %>% 
+    ###ggplot(aes(x=margin, y=rev, col=profit, label=prod)) + 
+    ###geom_point(size=1.5,alpha=0.8) + scale_y_log10(limits=c(1e4,1e6)) + 
+    ###scale_color_gradientn(colors=col6) + theme_bw() +
+    ###geom_text(aes(x=15,y=1e6,label=paste("top-300",z)),color="black")
+  ###} ) 
+###subplot(L)
+```
+
+```{r}
+###cat100 = count(Z0, cat, wt=price, sort=T) %>% mutate(
+  ###pc=n/sum(n), cum.pc=cumsum(pc)) %>% head(100)
+###cat100[c(1:5,96:100), ]
+#找出營收最大的品類
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

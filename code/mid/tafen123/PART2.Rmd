@@ -1,0 +1,103 @@
+```{r}
+pacman::p_load(vcd, magrittr, readr, caTools, ggplot2, dplyr, plotly)
+load("data/tf0.rdata")
+sapply(list(cust=A0,tid=X0,items=Z0), nrow)
+```
+
+## 接下來，我們想針對顧客做一些分析
+#### 將年齡與地理位置以柱狀圖呈現
+```{r}
+par(mfrow=c(1,2),cex=0.7)
+table(A0$age) %>% barplot(las=2,main="Age Groups")
+table(A0$area) %>% barplot(las=2,main="Areas")
+```
+
+### 可以發現從分布來看 a34、a39、a44，以及z115、z221在數量上特別多
+
+## 再來，我們查看顧客的年齡與地理是否有關聯性
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+
+MOSA(~age+area, A0)
+```
+### 可以發現到a34、a39在z115的比例特別低
+
+## 進一步確認數量
+```{r}
+result <- A0 %>%
+  group_by(area, age) %>%
+  summarize(total_customers = n())%>%
+  arrange(desc(total_customers))
+# 输出结果
+print(result)
+```
+## 接下來分析地理影響
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+### 可以觀察到，次數與客單價大致呈現反比
+## 分析顧客資歷與最近購買
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(r),            # 平均最近購買
+  avg.Revenue = mean(s)  # 平均顧客資歷
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均最近購買") + xlab("平均顧客資歷")
+```
+
+
+## 進一步分析收益與顧客資歷
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(raw),            # 平均毛利
+  avg.Revenue = mean(s)  # 平均顧客資歷
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均毛利") + xlab("平均顧客資歷")
+```
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(raw),            # 平均毛利
+  avg.Revenue = mean(r)  # 平均最近購買
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均毛利") + xlab("平均最近購買")
+```
+
