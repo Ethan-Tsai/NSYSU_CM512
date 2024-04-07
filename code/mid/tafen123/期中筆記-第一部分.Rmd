@@ -1,0 +1,100 @@
+---
+title: "期中筆記"
+author: "YP Zheng"
+date: "2024-03-28"
+output: html_document
+---
+
+```{r}
+rm(list=ls(all=TRUE))
+pacman::p_load(vcd, magrittr, readr, caTools, ggplot2, dplyr, plotly)
+load("data/tf0.rdata")
+sapply(list(cust=A0,tid=X0,items=Z0), nrow)
+```
+
+##### 營運概況
+```{r}
+summary(Z0$price)
+length(unique(Z0$cat))
+```
+商品普遍價格不高，一半落在42~132元，且種類多樣，共有2007件不同產品，推測為小型平價百貨賣場
+
+##### 消費族群分析
+```{r}
+par(mfrow=c(1,2),cex=0.7)
+table(A0$age) %>% barplot(las=2,main="Age Groups")
+table(A0$area) %>% barplot(las=2,main="Areas")
+```
+同圖中可看出，34~44歲族群消費最多，地區則為南港區與汐止市消費最多
+
+##### 泡泡圖:顧客分群與地區分群
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(age) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=age, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=age)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("年齡區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+年齡區隔:34~44歲的平均購買次數較低，但平均客單價最高；而69歲的平均購買次數最高，但平均客單價最低
+地區區隔:南港和汐止的平均購買次數最高，但平均客單價最低；而其他地區的平均購買次數較低，但平均客單價最高
+
+
+##### 年齡與購物日關聯
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+X0$wday = format(X0$date, "%u")
+
+MOSA(~age+wday, X0)
+```
+市場定位:
+為中老年人平日購物的熱區
+青壯年偏好在假日去消費
+
+#####獲利狀況
+```{r}
+col6 = c('seagreen','gold','orange',rep('red',3))
+gg= group_by(Z0, cat) %>% summarise(
+  solds = n(), qty = sum(qty), rev = sum(price), cost = sum(cost), 
+  profit = rev - cost, margin = 100*profit/rev
+  ) %>% 
+  top_n(100, profit) %>% 
+  ggplot(aes(x=margin, y=rev, col=profit, label=cat)) + 
+  geom_point(size=2,alpha=0.8) + scale_y_log10() + 
+  scale_color_gradientn(colors=col6) +
+  theme_bw()
+ggplotly(gg)
+```
+由圖可知，利潤最高的前三項分別為560201、560402和320402，而大部分產品的利潤均不高(呈現綠色)
+另外，營收與margint呈現負相關
+
+
+
+
+

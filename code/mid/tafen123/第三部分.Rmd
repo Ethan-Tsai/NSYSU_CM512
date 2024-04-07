@@ -1,0 +1,220 @@
+---
+title: "Group5"
+author: "M124112013"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+rm(list=ls(all=T))
+knitr::opts_chunk$set(paged.print=FALSE, comment = NA)
+pacman::p_load(magrittr, readr, caTools, ggplot2, dplyr, vcd)
+```
+
+
+```{r}
+library(vcd)
+library(corrplot)
+library(magrittr)
+library(ggplot2)
+```
+
+
+#Z0為交易項目817741次 tid為訂單編號
+#x0為交易紀錄119422筆交易
+#A0為顧客資料 
+#r最小天數差異 s最大天數差異 f頻率 m金額的平均值 rev 總營收 raw總毛利 
+
+```{r}
+load("C:/Users/abcmm/R practice/CM512-group5/tf0.rdata")
+```
+
+#產品資訊
+
+```{r}
+cats = Z0 %>% group_by(cat) %>% summarise(
+  noProd = n_distinct(prod),
+  totalQty = sum(qty),
+  totalRev = sum(price),
+  totalGross = sum(price) - sum(cost),
+  grossMargin = totalGross/totalRev,
+  avgPrice = totalRev/totalQty
+  )
+```
+
+#前10項營收最高品項(前10項品項已占總營收20%)
+
+```{r}
+top10rev = cats %>%
+  arrange(desc(totalRev)) %>%
+  head(10);top10rev
+```
+
+
+#前10項毛利最高品項(前10項品項已占總獲利12%)
+```{r}
+top10gross = cats %>%
+  arrange(desc(totalGross)) %>%
+  head(10);top10gross
+```
+
+
+#7項負毛利品項
+
+```{r}
+bottom7gross = cats %>%
+  arrange(totalGross) %>%
+  head(7);bottom7gross
+```
+
+#前10項銷量最多的品項
+
+```{r}
+top10 = tapply(Z0$qty,Z0$cat,sum) %>% sort %>% tail(10) %>% names ;top10
+```
+
+#前125大品項毛利率為17%
+```{r}
+top125_grossMargin <- head(cats$grossMargin[order(cats$totalGross, decreasing = TRUE)], 125)
+
+mean(top125_grossMargin)
+```
+
+#全品項毛利率為24.8%
+```{r}
+mean(cats$grossMargin)
+```
+
+
+```{r}
+g1 = arrange(cats, desc(totalRev)) %>% 
+  mutate(pc=100*totalRev/sum(totalRev), cum.pc=cumsum(pc)) %>% 
+  head(70) %>% ggplot(aes(x=1:70)) +
+  geom_col(aes(y=cum.pc),fill='cyan',alpha=0.5) +
+  geom_col(aes(y=pc), fill='darkcyan',alpha=0.5) +
+  labs(title="前70大品類(累計)營收", y="(累計)營收貢獻(%)") +
+  theme_bw() ; g1
+```
+
+```{r}
+g2 = arrange(cats, desc(totalGross)) %>% 
+  mutate(pc=100*totalGross/sum(totalGross), cum.pc=cumsum(pc)) %>% 
+  head(125) %>% ggplot(aes(x=1:125)) +
+  geom_col(aes(y=cum.pc),fill='pink',alpha=0.5) +
+  geom_col(aes(y=pc), fill='magenta',alpha=0.5) +
+  labs(title="前125大品類(累計)獲利", y="(累計)獲利貢獻(%)") +
+  theme_bw(); g2
+```
+
+
+```{r}
+plotly::subplot(g1, g2)
+```
+
+#營收前十大品類直方圖
+```{r}
+top_10_cats <- head(cats[order(-cats$totalRev),], 10)
+
+
+ggplot(top_10_cats, aes(x = factor(cat), y = totalRev)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "", y = "總營收", title = "營收前十大品類") +
+  scale_y_continuous(labels = scales::comma, limits = c(0, ceiling(max(top_10_cats$totalRev)/100000)*100000)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#獲利前十大品類直方圖
+```{r}
+top_10_cats_gross <- head(cats[order(-cats$totalGross),], 10)
+
+ggplot(top_10_cats_gross, aes(x = factor(cat), y = totalGross)) +
+  geom_bar(stat = "identity", fill = "salmon") +
+  labs(x = "", y = "總毛利", title = "獲利前十大品類") +
+  scale_y_continuous(labels = scales::comma, limits = c(0, ceiling(max(top_10_cats_gross$totalGross)/100000)*100000)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#銷量前十大品類直方圖
+```{r}
+top_10_qty <- head(cats[order(-cats$totalQty),], 10)
+
+ggplot(top_10_qty, aes(x = factor(cat), y = totalQty)) +
+  geom_bar(stat = "identity", fill = "lightgreen") +
+  labs(x = "", y = "總銷量", title = "銷量前十大品類") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+
+#根據前四項數據顯示
+
+#560201為營收&毛利&銷售量前十品項
+#68種不同的產品,毛利率為 6.67% ,平均單價為 293.48, 
+#a29-39喜愛購買 <24 & 44~54不喜愛購買
+##115南港不會買 221汐止區及其他區顧客會購買
+#推測為嬰幼兒用品：例如紙尿褲、嬰兒濕巾、嬰兒食品等。
+#這類產品對於年輕家庭來說是必需品，因此在這個年齡層的
+#消費者中可能有較高的銷售量。
+
+
+#530101為營收&毛利前十品項，六日購買量較高
+#88種不同的產品,毛利率為15.8% ,平均單價為 81,
+#a44,a49 喜愛購買530101 非常不喜愛購買560201
+#推測為酒類 尤其是啤酒類型
+
+
+#100205為營收&毛利&銷售量前十品項
+#275種不同的產品,毛利率為 16.47% ,平均單價為49, 
+#a24 a39購買頻率較高 a29 a54 a59 不經常購買
+#221汐止區顧客不會購買
+#推測為零食類 如波卡、爆米花、巧克力等
+
+#130206為毛利&銷售量前十品項
+#76種不同的產品,毛利率為14% ,平均單價為 63,
+#a54以上者稍微會購買 a34不喜愛購買
+##115南港&221汐止區顧客會購買
+#推測為麵包類型食品
+
+
+#負毛利品項中130315，但同時也為銷量最多的品項
+#不受年齡層29到39的客群購買，但受49到69的客群購買
+#(年長者購住附近，經常性購買，不住附近的40歲以下客群不會遠道而來)
+#12種不同的產品,毛利率為-30% ,平均單價為 19,
+#毛利-122632元	
+#推測促銷類型生鮮辛香料 蔥薑蒜等
+
+
+
+#該圖沒有要用
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+
+MOSA(~age+area, A0)
+```
+
+
+```{r}
+top10 = tapply(Z0$qty,Z0$cat,sum) %>% sort %>% tail(10) %>% names
+```
+
+
+#品類與消費者購買頻率馬賽克圖
+```{r}
+MOSA(~cat+age, Z0[Z0$cat %in% top10,])
+```
+
+```{r}
+MOSA(~cat+area, Z0[Z0$cat %in% top10,])
+```
+
+
+

@@ -1,0 +1,409 @@
+---
+title: "期中筆記"
+author: "鄭育朋、蔡尚宸、張芥瑩、郭承軒"
+date: "2024-04-07"
+output: html_document
+---
+
+```{r}
+rm(list=ls(all=TRUE))
+pacman::p_load(vcd, magrittr, readr, caTools, ggplot2, dplyr, plotly)
+load("data/tf0.rdata")
+sapply(list(cust=A0,tid=X0,items=Z0), nrow)
+```
+
+# 第一部分: 營運概況
+```{r}
+summary(Z0$price)
+length(unique(Z0$cat))
+```
+商品普遍價格不高，一半落在42~132元，且種類多樣，共有2007件不同產品，推測為小型平價百貨賣場
+
+#### 消費族群分析
+```{r}
+par(mfrow=c(1,2),cex=0.7)
+table(A0$age) %>% barplot(las=2,main="Age Groups")
+table(A0$area) %>% barplot(las=2,main="Areas")
+```
+<br>
+同圖中可看出，34~44歲族群消費最多，地區則為南港區與汐止市消費最多
+
+#### 泡泡圖:顧客分群與地區分群
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(age) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=age, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=age)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("年齡區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+<br>
+年齡區隔:34~44歲的平均購買次數較低，但平均客單價最高；而69歲的平均購買次數最高，但平均客單價最低<br>
+地區區隔:南港和汐止的平均購買次數最高，但平均客單價最低；而其他地區的平均購買次數較低，但平均客單價最高
+
+
+#### 年齡與購物日關聯
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+X0$wday = format(X0$date, "%u")
+
+MOSA(~age+wday, X0)
+```
+<br>
+市場定位:
+為中老年人平日購物的熱區
+青壯年偏好在假日去消費
+
+#### 獲利狀況
+```{r}
+col6 = c('seagreen','gold','orange',rep('red',3))
+gg= group_by(Z0, cat) %>% summarise(
+  solds = n(), qty = sum(qty), rev = sum(price), cost = sum(cost), 
+  profit = rev - cost, margin = 100*profit/rev
+  ) %>% 
+  top_n(100, profit) %>% 
+  ggplot(aes(x=margin, y=rev, col=profit, label=cat)) + 
+  geom_point(size=2,alpha=0.8) + scale_y_log10() + 
+  scale_color_gradientn(colors=col6) +
+  theme_bw()
+ggplotly(gg)
+```
+<br>
+由圖可知，利潤最高的前三項分別為560201、560402和320402，而大部分產品的利潤均不高(呈現綠色)
+<br>
+另外，營收與margint呈現負相關
+
+# 第二部分: 目標客群分析
+### 接下來，我們想針對顧客做一些分析
+#### 首先，我們查看顧客的年齡與地理是否有關聯性
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+
+MOSA(~age+area, A0)
+```
+<br>
+可以發現到a34、a39在z115的比例特別低
+
+#### 進一步確認數量
+```{r}
+result <- A0 %>%
+  group_by(area, age) %>%
+  summarize(total_customers = n())%>%
+  arrange(desc(total_customers))
+# 输出结果
+print(result)
+```
+#### 接下來分析地理影響
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(f),            # 平均購買次數
+  avg.Revenue = sum(f*m)/sum(f)  # 平均客單價
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均購買次數") + xlab("平均客單價")
+```
+<br>
+可以觀察到，次數與客單價大致呈現反比
+
+#### 分析顧客資歷與最近購買
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(r),            # 平均最近購買
+  avg.Revenue = mean(s)  # 平均顧客資歷
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均最近購買") + xlab("平均顧客資歷")
+```
+
+
+#### 進一步分析收益與顧客資歷
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(raw),            # 平均毛利
+  avg.Revenue = mean(s)  # 平均顧客資歷
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均毛利") + xlab("平均顧客資歷")
+```
+#### 進一步分析收益與顧客最近購買
+```{r}
+A0 %>% filter(age!="a99") %>%    # 濾掉沒有年齡資料的顧客('a99')
+  group_by(area) %>% summarise(
+  Group.Size = n(),              # 族群人數
+  avg.Freq = mean(raw),            # 平均毛利
+  avg.Revenue = mean(r)  # 平均最近購買
+  ) %>% 
+  ggplot(aes(y=avg.Freq, x=avg.Revenue)) +
+  geom_point(aes(col=area, size=Group.Size), alpha=0.5) +
+  geom_text(aes(label=area)) +
+  scale_size(range=c(5,25)) +
+  theme_bw() + theme(legend.position="none") +
+  ggtitle("地理區隔特徵 (泡泡大小:族群人數)") + 
+  ylab("平均毛利") + xlab("平均最近購買")
+```
+
+
+## 第三部分: 品類分析
+
+#### 產品資訊
+
+```{r}
+cats = Z0 %>% group_by(cat) %>% summarise(
+  noProd = n_distinct(prod),
+  totalQty = sum(qty),
+  totalRev = sum(price),
+  totalGross = sum(price) - sum(cost),
+  grossMargin = totalGross/totalRev,
+  avgPrice = totalRev/totalQty
+  )
+```
+
+#### 前10項營收最高品項(前10項品項已占總營收20%)
+
+```{r}
+top10rev = cats %>%
+  arrange(desc(totalRev)) %>%
+  head(10);top10rev
+```
+
+
+#### 前10項毛利最高品項(前10項品項已占總獲利12%)
+```{r}
+top10gross = cats %>%
+  arrange(desc(totalGross)) %>%
+  head(10);top10gross
+```
+
+
+#### 7項負毛利品項
+
+```{r}
+bottom7gross = cats %>%
+  arrange(totalGross) %>%
+  head(7);bottom7gross
+```
+
+#### 前10項銷量最多的品項
+
+```{r}
+top10 = tapply(Z0$qty,Z0$cat,sum) %>% sort %>% tail(10) %>% names ;top10
+```
+
+#### 前125大品項毛利率為17%
+```{r}
+top125_grossMargin <- head(cats$grossMargin[order(cats$totalGross, decreasing = TRUE)], 125)
+
+mean(top125_grossMargin)
+```
+
+#### 全品項毛利率為24.8%
+```{r}
+mean(cats$grossMargin)
+```
+
+
+```{r}
+g1 = arrange(cats, desc(totalRev)) %>% 
+  mutate(pc=100*totalRev/sum(totalRev), cum.pc=cumsum(pc)) %>% 
+  head(70) %>% ggplot(aes(x=1:70)) +
+  geom_col(aes(y=cum.pc),fill='cyan',alpha=0.5) +
+  geom_col(aes(y=pc), fill='darkcyan',alpha=0.5) +
+  labs(title="前70大品類(累計)營收", y="(累計)營收貢獻(%)") +
+  theme_bw() ; g1
+```
+
+```{r}
+g2 = arrange(cats, desc(totalGross)) %>% 
+  mutate(pc=100*totalGross/sum(totalGross), cum.pc=cumsum(pc)) %>% 
+  head(125) %>% ggplot(aes(x=1:125)) +
+  geom_col(aes(y=cum.pc),fill='pink',alpha=0.5) +
+  geom_col(aes(y=pc), fill='magenta',alpha=0.5) +
+  labs(title="前125大品類(累計)獲利", y="(累計)獲利貢獻(%)") +
+  theme_bw(); g2
+```
+
+
+```{r}
+plotly::subplot(g1, g2)
+```
+
+#### 營收前十大品類直方圖
+```{r}
+top_10_cats <- head(cats[order(-cats$totalRev),], 10)
+
+
+ggplot(top_10_cats, aes(x = factor(cat), y = totalRev)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(x = "", y = "總營收", title = "營收前十大品類") +
+  scale_y_continuous(labels = scales::comma, limits = c(0, ceiling(max(top_10_cats$totalRev)/100000)*100000)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### 獲利前十大品類直方圖
+```{r}
+top_10_cats_gross <- head(cats[order(-cats$totalGross),], 10)
+
+ggplot(top_10_cats_gross, aes(x = factor(cat), y = totalGross)) +
+  geom_bar(stat = "identity", fill = "salmon") +
+  labs(x = "", y = "總毛利", title = "獲利前十大品類") +
+  scale_y_continuous(labels = scales::comma, limits = c(0, ceiling(max(top_10_cats_gross$totalGross)/100000)*100000)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### 銷量前十大品類直方圖
+```{r}
+top_10_qty <- head(cats[order(-cats$totalQty),], 10)
+
+ggplot(top_10_qty, aes(x = factor(cat), y = totalQty)) +
+  geom_bar(stat = "identity", fill = "lightgreen") +
+  labs(x = "", y = "總銷量", title = "銷量前十大品類") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+
+#### 根據前四項數據顯示
+
+#560201為營收&毛利&銷售量前十品項
+#68種不同的產品,毛利率為 6.67% ,平均單價為 293.48, 
+#a29-39喜愛購買 <24 & 44~54不喜愛購買
+##115南港不會買 221汐止區及其他區顧客會購買
+#推測為嬰幼兒用品：例如紙尿褲、嬰兒濕巾、嬰兒食品等。
+#這類產品對於年輕家庭來說是必需品，因此在這個年齡層的
+#消費者中可能有較高的銷售量。
+
+
+#530101為營收&毛利前十品項，六日購買量較高
+#88種不同的產品,毛利率為15.8% ,平均單價為 81,
+#a44,a49 喜愛購買530101 非常不喜愛購買560201
+#推測為酒類 尤其是啤酒類型
+
+
+#100205為營收&毛利&銷售量前十品項
+#275種不同的產品,毛利率為 16.47% ,平均單價為49, 
+#a24 a39購買頻率較高 a29 a54 a59 不經常購買
+#221汐止區顧客不會購買
+#推測為零食類 如波卡、爆米花、巧克力等
+
+#130206為毛利&銷售量前十品項
+#76種不同的產品,毛利率為14% ,平均單價為 63,
+#a54以上者稍微會購買 a34不喜愛購買
+##115南港&221汐止區顧客會購買
+#推測為麵包類型食品
+
+
+#負毛利品項中130315，但同時也為銷量最多的品項
+#不受年齡層29到39的客群購買，但受49到69的客群購買
+#(年長者購住附近，經常性購買，不住附近的40歲以下客群不會遠道而來)
+#12種不同的產品,毛利率為-30% ,平均單價為 19,
+#毛利-122632元	
+#推測促銷類型生鮮辛香料 蔥薑蒜等
+
+
+
+#### 該圖沒有要用
+```{r}
+MOSA = function(formula, data) mosaic(formula, data, shade=T, 
+  margins=c(0,1,0,0), labeling_args = list(rot_labels=c(90,0,0,0)),
+  gp_labels=gpar(fontsize=9), legend_args=list(fontsize=9),
+  gp_text=gpar(fontsize=7),labeling=labeling_residuals)
+
+MOSA(~age+area, A0)
+```
+
+
+```{r}
+top10 = tapply(Z0$qty,Z0$cat,sum) %>% sort %>% tail(10) %>% names
+```
+
+
+#### 品類與消費者購買頻率馬賽克圖
+```{r}
+MOSA(~cat+age, Z0[Z0$cat %in% top10,])
+```
+
+```{r}
+MOSA(~cat+area, Z0[Z0$cat %in% top10,])
+```
+
+## 第四部分: 行銷策略
+
+#### 依年齡和地區做市場區隔
+```{r}
+knitr::include_graphics("./data/marketing/1.jpg")
+```
+```{r}
+knitr::include_graphics("./data/marketing/2.jpg")
+```
+```{r}
+knitr::include_graphics("./data/marketing/3.jpg")
+```
+
+## 針對產品品類行銷
+```{r}
+knitr::include_graphics("./data/marketing/4.jpg")
+```
+```{r}
+knitr::include_graphics("./data/marketing/5.jpg")
+```
+```{r}
+knitr::include_graphics("./data/marketing/6.jpg")
+```
+
+
+
