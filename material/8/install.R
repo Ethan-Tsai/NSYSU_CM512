@@ -1,0 +1,7 @@
+if(!require(pacman)) install.packages("pacman")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(plotly)) install.packages("plotly")
+if(!require(shiny)) install.packages("shiny")
+if(!require(shinyWidgets)) install.packages("shinyWidgets")
+if(!require(flexdashboard)) install.packages("flexdashboard")

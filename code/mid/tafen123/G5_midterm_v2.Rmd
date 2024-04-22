@@ -383,27 +383,20 @@ MOSA(~cat+area, Z0[Z0$cat %in% top10,])
 
 ## 第四部分: 行銷策略
 
-#### 依年齡和地區做市場區隔
+#### 行銷方案1
 ```{r}
-knitr::include_graphics("./data/marketing/1.jpg")
-```
-```{r}
-knitr::include_graphics("./data/marketing/2.jpg")
-```
-```{r}
-knitr::include_graphics("./data/marketing/3.jpg")
+knitr::include_graphics("./data/marketing/new1.jpg")
 ```
 
-## 針對產品品類行銷
+#### 行銷方案2
+
 ```{r}
-knitr::include_graphics("./data/marketing/4.jpg")
-```
-```{r}
-knitr::include_graphics("./data/marketing/5.jpg")
-```
-```{r}
-knitr::include_graphics("./data/marketing/6.jpg")
+knitr::include_graphics("./data/marketing/new2.jpg")
 ```
 
+#### 會員制度
+```{r}
+knitr::include_graphics("./data/marketing/new3.jpg")
+```
 
-
+## 以上第五組報告 謝謝教授、助教

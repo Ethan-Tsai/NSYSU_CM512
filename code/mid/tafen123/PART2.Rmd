@@ -32,6 +32,7 @@ result <- A0 %>%
   summarize(total_customers = n())%>%
   arrange(desc(total_customers))
 # 输出结果
+options(dplyr.print_max = 100)
 print(result)
 ```
 ## 接下來分析地理影響

@@ -1,0 +1,185 @@
+---
+title: UNIT09C：多重線性回歸 Multiple Linear Regression
+author: 中山大學管理學院 卓雍然
+date: "`r Sys.time()`"
+output: 
+  html_document:
+    highlight: pygments
+    theme: flatly
+    css: ../etc/style.css
+---
+
+```{r results='hide', message=FALSE, warning=FALSE, echo=F}
+# Formating Codes.  Do not change the codes in this chunk !!
+rm(list=ls(all=T))
+knitr::opts_chunk$set(comment = NA)
+knitr::opts_knit$set(global.par = TRUE)
+par(cex=0.8)
+options(scipen=20, digits=5, width=80)
+if(!require(pacman)) install.packages("pacman")
+```
+<hr>
+
+```{r results='hide', message=FALSE, warning=FALSE}
+pacman::p_load(dplyr, ggplot2, corrplot)
+```
+<br><hr>
+
+### [A] 多元線性回歸 - `lm()` 
+
+##### § A1 讀進資料
+全球暖化資料集
+```{r}
+D = read.csv('data/climate_change.csv')
+head(D)
+```
+
+現代的資料分析過程之中，我們通常不會將所有的資料拿來做模型，而是會先保留一部分的資料下來，用來估計模型的準確性。所以一開始我們會將全部資料(`D`)分割為訓練資料(`TR`)與測試資料(`TS`)
+```{r}
+TR = subset(D, Year <= 2006)  # Train Data
+TS = subset(D, Year > 2006)   # Test Data
+```
+
+
+##### § A2 建立模型
+使用訓練資料(`TR`)做模型
+```{r}
+m1 = lm(Temp~MEI+CO2+CH4+N2O+CFC.11+CFC.12+TSI+Aerosols,TR)
+```
+
+##### § A3 模型摘要
+```{r}
+options(digits=4, scipen=10)
+summary(m1)
+```
+
+$y$ 的 __預測值__： 
+
++ $\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + b_3 x_3 + b_4 x_4 + ...$
+
+__簡單講__，對每一個自變數而言：
+
++ $b_i$ : 係數的估計值代表 $x_i$ 對 $y$ 的邊際效果
++ $\sigma_i$ : 係數的標準差代表該係數的不確定性
++ $p_i$ : $p$-value 大致上代表 $x_i$ 與 $y_i$ 之間沒有關係的機率，
+這個機率小於顯著水準，我們就說 $x_i$ 對 $y$ 的關係是顯著的
+
+__嚴格來講__：
+
++ 問題很多 ... 整個管統、多變量、和計量經濟大概都在處理這些問題
+
+__幸好__：
+
++ 在商業數據分析裡面通常我們比較關心目標變數的預測值($\hat{y}$)，這部分比較沒有問題
+
+<br><hr>
+
+### [B] 係數的分布(機率密度函數)
+
+```{r fig.width=8, fig.height=4.5, fig.align="center"}
+vx = c(3:5,7); cx = summary(m1)$coef  
+par(cex=0.8)
+plot(0,0,xlim=c(-0.04,0.02),ylim=c(0,800),pch=20,
+     xlab="coefficients: the estimated value of b's",
+     ylab='probability density',
+     main='Probability Density Function of Coefficients')
+abline(h=seq(0,800,100),v=seq(-0.04,0.03,0.0025),col='lightgray',lty=3)
+for(i in vx) curve(dnorm(x,cx[i,1],cx[i,2]),add=T,col=i,lwd=2,n=1000)
+abline(v=0,col='red')
+legend("topleft",col=vx,lwd=2,legend=paste0(
+  "b",vx," ( ",rownames(cx)[vx]," )", c("**","","。","***") ) )
+
+summary(m1)$coef[vx,]
+```
+
+<p class="qiz">
+<span style="font-size:24px">`r "\U1F5FF"` 討論問題：</span><br>
+&emsp; 1.依據這個模型，在`CO2`、`CH4`、`N2O`、`CFC12`之中：<br>
+&emsp; &emsp; ■ 哪一種氣體的效果(關係)估計值最大？ 它的效果是顯著的嗎？<br>
+&emsp; &emsp; ■ 哪一種氣體的效果最顯著？ 它的效果估計值是最大的嗎？<br>
+&emsp; &emsp; ■ 除了係數的估計值之外，還有什麼因素會影響自變數的顯著性？<br>
+&emsp; 2.如果樣本變大的話：<br>
+&emsp; &emsp; ■ 係數的估計值會(a)變大、(b)變小、或(c)不變？<br>
+&emsp; &emsp; ■ 係數的估計標準差會(a)變大、(b)變小、或(c)不變？ <br>
+&emsp; &emsp; ■ 自變數的$p$-value會(a)變大、(b)變小、或(c)不變？<br>
+&emsp; &emsp; ■ 自變數的顯著性會(a)變大、(b)變小、或(c)不變？<br>
+</p class="qiz"><br>
+<br><hr>
+
+### [C] 自變數之間的相關性、複回歸的共線性問題
+🌻 自變數之間的相關性過高，可能會使係數的估計值有很大的偏差
+```{r}
+cor(TR[3:10]) %>% round(2)
+```
+
+```{r fig.width=5, fig.height=5}
+cor(TR[3:10]) %>% corrplot.mixed(tl.cex=0.7, tl.col='black')
+```
+<br><hr>
+
+### [D] 模型選擇、挑選變數
+🌻 所以我們常把相關性太高的自變數從模型中移除
+```{r}
+m2 = lm(Temp~MEI+N2O+TSI+Aerosols,TR)  # 手動挑選自變數
+summary(m2)
+```
+
+🌻 `R`語言裡面也有一個自動挑選變數的內建函數`step()`
+```{r}
+m3 = step(m1)   # 自動挑選自變數
+summary(m3)
+```
+<br><hr>
+
+### [E] 誤差與準確性指標
+
++ 基礎模型的差方和(__SST__)：$\sum_i (y_i-\bar{y})^2$
+
++ 回歸模型的差方和(__SSE__)：$\sum_i (\hat{y_i}-y_i)^2$ 
+
++ 判定係數($R^2$)：$1 - \frac{SSE}{SST}$
+
++ 平均誤差(__RMSE__)：$\sqrt{SSE/n}$
+
+<br>
+
+##### § E1 使用 __訓練資料__ 做預測
+```{r}
+pred =  predict(m3)                     # 使用訓練資料做預測
+SSE = sum((pred - TR$Temp)^2)           # SSE.train
+SST = sum((mean(TR$Temp) - TR$Temp)^2)  # SST.train
+R2 = 1 - SSE/SST                        # R2.train
+RMSE = sqrt(SSE/nrow(TR))               # RMSE.train
+c(SSE, SST, R2, RMSE)
+```
+<br>
+
+##### § E2 使用 __測試資料__ 做預測
+```{r}
+pred =  predict(m3, TS)                 # 使用測試資料做預測
+SSE = sum((pred - TS$Temp)^2)           # SSE.test
+SST = sum((mean(TR$Temp) - TS$Temp)^2)  # SST.test
+R2 = 1 - SSE/SST                        # R2.test
+RMSE = sqrt(SSE/nrow(TS))               # RMSE.test
+c(SSE, SST, R2, RMSE)
+```
+注意一下，我們計算 __測試資料__ 的差方和是使用 __訓練資料__ 的平均值做基準
+
+$$ SST_{test} = \sum_{i=1}^n(\bar{y}_{train} - y_{i,test})^2$$
+所以 $R_{test}^2$ 有可能會小於零。
+
+<br>
+
+<p class="qiz">
+<span style="font-size:24px">`r "\U1F5FF"` 討論問題：</span><br>
+&emsp; 3.在商務數據分析的角度，我們應該關心的是自變數的：<br>
+&emsp; &emsp; ■ 係數估計值<br>
+&emsp; &emsp; ■ $p$-value<br>
+&emsp; &emsp; ■ 顯著性<br>
+&emsp; &emsp; ■ 其他，請說明為甚麼？<br>
+</p class="qiz"><br>
+
+<br><br><br><hr>
+
+
+
